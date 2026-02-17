@@ -1,0 +1,12 @@
+<RCC>
+  <qresource prefix="images">
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/about.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/clear.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/clear_all.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/exit.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/open_file.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/pointpol.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/ray.png</file>
+    <file>//data.fsv.cvut.cz/Shares/K155/Public/155ADKI/Python/adki_2025_26/Cv1/icons/winding.png</file>
+  </qresource>
+</RCC>
