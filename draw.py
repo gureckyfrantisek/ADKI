@@ -8,7 +8,7 @@ class Draw(QWidget):
         super().__init__(*args, **kwargs)
         self.__pol = QPolygonF()
         self.__q = QPointF(-100, -100)
-        self.__add_vertex = False
+        self.__add_vertex = True
        
         
     def mousePressEvent(self, e):
@@ -64,3 +64,12 @@ class Draw(QWidget):
     def changeStatus(self):
         #Change status: draw point / polygon
         self.__add_vertex = not(self.__add_vertex)
+        
+        
+    def clearSelection(self):
+        #Clears entire canvas
+        self.__q = QPointF(-100, -100)
+        self.__pol.clear()
+        
+        #Repaints cleared screen
+        self.repaint()
