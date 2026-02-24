@@ -1,0 +1,3 @@
+# toto jsem použil po přeinstalování pyqt6
+
+python -m PyQt6.uic.pyuic -o MainForm.py -x prvni_ui.ui
