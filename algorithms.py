@@ -104,3 +104,7 @@ class Algorithms:
         
         #Point q outside pol
         return 0
+
+    def preselectMinMax(self, q, polygons):
+        """ Will check if the point lays in any min/max boxes and return those polygons """
+        return polygons

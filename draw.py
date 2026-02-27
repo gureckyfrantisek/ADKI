@@ -1,6 +1,7 @@
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
+from algorithms import Algorithms
 
 class Draw(QWidget):
 
@@ -9,6 +10,7 @@ class Draw(QWidget):
         self.__pol = QPolygonF()
         self.__q = QPointF(-100, -100)
         self.__add_vertex = True
+        self.__algo = Algorithms()
        
         
     def mousePressEvent(self, e):
@@ -73,3 +75,36 @@ class Draw(QWidget):
         
         #Repaints cleared screen
         self.repaint()
+    
+    def showResult(self, result):
+        """ Displays the result """
+        #For now just prints the inside or outside
+        print("INSIDE" if result else "OUTSIDE")
+    
+    def analyze(self, option):
+        """ Runs the analyzation from the selected method """
+        #Here we can run the preselection with min/max boxes
+        polygons = self.__algo.preselectMinMax(self.__q, self.__pol)   #Only add pol for now
+        pol_count = len(polygons)
+
+        result = []
+
+        match option:
+            #Ray crossing
+            case 1:
+                for i in range(pol_count):
+                    #Check if the point lays in that polygon
+                    if self.__algo.analyzePointAndPolygonRC(self.__q, polygons[i]):
+                        #If True, append the polygon id
+                        result.append(i)
+            
+            #Winding number
+            case 2:
+                for i in range(pol_count):
+                    #Check if the point lays in that polygon
+                    if self.__algo.analyzePointAndPolygonWN(self.__q, polygons[i]):
+                        #If True, append the polygon id
+                        result.append(i)
+        
+        self.showResult(result)
+        return True
