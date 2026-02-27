@@ -75,7 +75,7 @@ class Algorithms:
         """ Analyze point and polygon position using Winding Number Algorithm """
         #Initialize
         Omega = 0           #Sum of angles
-        tolerance = sys.float_info.epsilon * 10
+        tolerance = sys.float_info.epsilon * 10e3
         n = len(pol)        #Number of polygon points
 
         #For all points
@@ -96,7 +96,7 @@ class Algorithms:
             
             #Add to the Omega sum signed by the position
             Omega += position * angle
-
+        
         #Check if Omega is equal to 2pi with float precission
         if abs(abs(Omega) - 2 * math.pi) < tolerance:
             #Point q inside pol
