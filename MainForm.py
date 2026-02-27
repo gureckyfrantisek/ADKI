@@ -46,6 +46,7 @@ class Ui_MainForm(object):
         icon.addPixmap(QtGui.QPixmap(f"{file_path}/icons/exit.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionExit.setIcon(icon)
         self.actionExit.setObjectName("actionExit")
+        self.actionExit.triggered.connect(lambda: sys.exit(app.exec()))
         self.actionOpen = QtGui.QAction(parent=MainForm)
         icon1 = QtGui.QIcon()
         icon1.addPixmap(QtGui.QPixmap(f"{file_path}/icons/open_file.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
