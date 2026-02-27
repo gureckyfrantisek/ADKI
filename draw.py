@@ -84,7 +84,7 @@ class Draw(QWidget):
     def analyze(self, option):
         """ Runs the analyzation from the selected method """
         #Here we can run the preselection with min/max boxes
-        polygons = self.__algo.preselectMinMax(self.__q, self.__pol)   #Only add pol for now
+        polygons = self.__algo.preselectMinMax(self.__q, [self.__pol])   #Only add pol for now
         pol_count = len(polygons)
 
         result = []

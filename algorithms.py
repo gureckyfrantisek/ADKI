@@ -95,7 +95,7 @@ class Algorithms:
             angle = self.calculateAngle(p_i, q, p_ii)
             
             #Add to the Omega sum signed by the position
-            Omega = position * angle
+            Omega += position * angle
 
         #Check if Omega is equal to 2pi with float precission
         if abs(abs(Omega) - 2 * math.pi) < tolerance:
@@ -107,4 +107,10 @@ class Algorithms:
 
     def preselectMinMax(self, q, polygons):
         """ Will check if the point lays in any min/max boxes and return those polygons """
-        return polygons
+        possible_poly = []
+
+        # if q inside min/max, append to possible
+        #For now just add all
+        possible_poly = polygons
+
+        return possible_poly
