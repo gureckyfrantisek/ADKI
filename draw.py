@@ -3,6 +3,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from algorithms import Algorithms
 from polygon import Polygon
+import datetime
 
 class Draw(QWidget):
 
@@ -132,40 +133,50 @@ class Draw(QWidget):
         qp.end()
         
         
-    def changeStatus(self):
+    def changeStatus(self, log):
         """ Changes status: draw point / polygon """
         self.__add_vertex = not(self.__add_vertex)
         
+        if self.__add_vertex:
+            log.appendPlainText(f"{self.get_time_str()}Polygon selected.")
+        else:
+            log.appendPlainText(f"{self.get_time_str()}Point selected.")
         
-    def clearSelection(self):
+        
+    def clearSelection(self, log):
         """ Clears entire canvas """
         self.__q = QPointF(-100, -100)
         self.__pol[0].clear()
         
         #Repaints cleared screen
         self.repaint()
+        log.appendPlainText(f"{self.get_time_str()}Canvas cleared.")
     
-    def showResult(self, result):
+    def showResult(self, result, log):
         """ Displays the result """
         #For now just prints the inside or outside
         if result:
             for poly in result:
                 print(f"INSIDE {poly.id}")
+                log.appendPlainText(f"    INSIDE {poly.id}")
             return
         
         print("OUTSIDE")
+        log.appendPlainText(f"    OUTSIDE")
     
-    def analyze(self, option):
+    def analyze(self, option, log):
         """ Runs the analyzation from the selected method """
         #Here we can run the preselection with min/max boxes
         polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
         pol_count = len(polygons)
+    
 
         result = []
 
         match option:
             #Ray crossing
             case 1:
+                log.appendPlainText(f"{self.get_time_str()}Analyze point (Ray crossing).")
                 for poly in polygons:
                     #Check if the point lays in that polygon
                     if self.__algo.analyzePointAndPolygonRC(self.__q, poly):
@@ -174,11 +185,17 @@ class Draw(QWidget):
             
             #Winding number
             case 2:
+                log.appendPlainText(f"{self.get_time_str()}Analyze point (Winding number).")
                 for poly in polygons:
                     #Check if the point lays in that polygon
                     if self.__algo.analyzePointAndPolygonWN(self.__q, poly):
                         #If True, append the polygon id
                         result.append(poly)
         
-        self.showResult(result)
+        self.showResult(result, log)
         return True
+    
+    def get_time_str(self):
+        now = datetime.datetime.now()
+        time = str(now.time()).split(".")[0]
+        return f"[{time}] "
