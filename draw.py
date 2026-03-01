@@ -26,7 +26,8 @@ class Draw(QWidget):
 
         if delta > 0:
             #Zoom in
-            self.__zoom /= self.__zoom_change
+            if self.__zoom < 1000:
+                self.__zoom /= self.__zoom_change
         else:
             #Zoom out
             self.__zoom *= self.__zoom_change
@@ -237,6 +238,10 @@ class Draw(QWidget):
         #First we get the file
         file = self.getFile(log)
 
+        #If no file was selected, return
+        if (not file):
+            return
+        
         #Then we read it
         sf = shp.Reader(file)
 
