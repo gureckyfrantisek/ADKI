@@ -3,6 +3,7 @@ from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from algorithms import Algorithms
 from polygon import Polygon
+import shapefile as shp
 import datetime
 
 class Draw(QWidget):
@@ -146,7 +147,7 @@ class Draw(QWidget):
     def clearSelection(self, log):
         """ Clears entire canvas """
         self.__q = QPointF(-100, -100)
-        self.__pol[0].clear()
+        self.__pol = [Polygon()]
         
         #Repaints cleared screen
         self.repaint()
@@ -199,3 +200,56 @@ class Draw(QWidget):
         now = datetime.datetime.now()
         time = str(now.time()).split(".")[0]
         return f"[{time}] "
+    
+    def bboxToQPoint(self, bbox):
+        """Transfers the shp format to an array of two QPointF's"""
+        return [QPointF(bbox[0], bbox[1]), QPointF(bbox[2], bbox[3])]
+
+    def saveSHPData(self, sf, log):
+        self.__pol = []  #Clear existing polygons
+        
+        for i, shape in enumerate(sf.shapes()):
+            poly = Polygon()
+            poly.id = i
+            poly.bbox = self.bboxToQPoint(shape.bbox)
+
+            for x, y in shape.points:
+                #X is right and Y is down on screen
+                #The coordinates in shape are inverted and interchanged
+                offset = (675000, 1100000)
+
+                poly.addVertex(QPointF(x + offset[0], -y - offset[1]))
+
+            self.__pol.append(poly)
+        
+        log.appendPlainText(f"{self.get_time_str()}Loaded {len(self.__pol)} polygon(s) from file.")
+    
+    def getFile(self, log):
+        log.appendPlainText(f"{self.get_time_str()}Opening file dialog.")
+
+        file, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Shapefiles (*.shp);;All Files (*)")
+        
+        log.appendPlainText(f"{self.get_time_str()}File open: {file}.")
+
+        return file
+    
+    def handleFileOpen(self, log):
+        #First we get the file
+        file = self.getFile(log)
+
+        #Then we read it
+        sf = shp.Reader(file)
+
+        #Save the polygons to our data structure
+        self.saveSHPData(sf, log)
+
+        #If it's the showcase data, change the pan and zoom to Czechia
+        if file.find("/data/"):
+            self.__pan = [350000, 200000]
+            self.__zoom = 0.0012
+
+        #Change input mode to point
+        self.__add_vertex = False
+
+        #Display the new polygons
+        self.repaint()
