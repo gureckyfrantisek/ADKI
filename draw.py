@@ -182,6 +182,7 @@ class Draw(QWidget):
         #Here we can run the preselection with min/max boxes
         polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
         pol_count = len(polygons)
+        log.appendPlainText(f"{self.get_time_str()}The point lays in {pol_count} bounding boxes.")
     
         #Reset the result
         self.__result = []
@@ -214,23 +215,29 @@ class Draw(QWidget):
         time = str(now.time()).split(".")[0]
         return f"[{time}] "
     
-    def bboxToQPoint(self, bbox):
+    def bboxToQPoint(self, bbox, offset):
         """Transfers the shp format to an array of two QPointF's"""
-        return [QPointF(bbox[0], bbox[1]), QPointF(bbox[2], bbox[3])]
+        x_min = bbox[0] + offset[0]
+        x_max = bbox[2] + offset[0]
+        y_min = -bbox[3] - offset[1]
+        y_max = -bbox[1] - offset[1]
+
+        #By inverting the y axis the min and max also invert on screen
+
+        return [QPointF(x_min, y_min), QPointF(x_max, y_max)]
 
     def saveSHPData(self, sf, log):
         self.__pol = []  #Clear existing polygons
-        
+        offset = (675000, 1100000)
+
         for i, shape in enumerate(sf.shapes()):
             poly = Polygon()
             poly.id = i
-            poly.bbox = self.bboxToQPoint(shape.bbox)
+            poly.bbox = self.bboxToQPoint(shape.bbox, offset)
 
             for x, y in shape.points:
                 #X is right and Y is down on screen
                 #The coordinates in shape are inverted and interchanged
-                offset = (675000, 1100000)
-
                 poly.addVertex(QPointF(x + offset[0], -y - offset[1]))
 
             self.__pol.append(poly)

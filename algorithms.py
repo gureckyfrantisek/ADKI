@@ -110,7 +110,15 @@ class Algorithms:
         possible_poly = []
 
         # if q inside min/max, append to possible
-        #For now just add all
-        possible_poly = polygons
+        for poly in polygons:
+            bbox = poly.bbox
+
+            if not bbox:
+                possible_poly.append(poly)
+                continue
+            
+            if q.x() >= bbox[0].x() and q.y() >= bbox[0].y() and q.x() <= bbox[1].x() and q.y() <= bbox[1].y():
+                possible_poly.append(poly)
+                print(poly.id)
 
         return possible_poly
