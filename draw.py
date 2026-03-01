@@ -19,6 +19,7 @@ class Draw(QWidget):
         self.__zoom_change = 0.9
         self.__pan = [0, 0]
         self.__pan_change = 40
+        self.__result = []
        
     def wheelEvent(self, event):
         #Handles mouse wheel inputs
@@ -119,8 +120,19 @@ class Draw(QWidget):
         
         #Draw all polygons
         for poly in self.__pol:
-            qp.drawPolygon(transform.map(poly))
-        
+            #If it's the result poly, color it red
+            if poly in self.__result:
+                qp.setPen(Qt.GlobalColor.yellow)
+                qp.setBrush(Qt.GlobalColor.red)
+            
+                qp.drawPolygon(transform.map(poly))
+                
+                qp.setPen(Qt.GlobalColor.red)
+                qp.setBrush(Qt.GlobalColor.yellow)
+
+            else:
+                qp.drawPolygon(transform.map(poly))
+                
         #Graphic attributes, point
         qp.setPen(Qt.GlobalColor.black)
         qp.setBrush(Qt.GlobalColor.white)
@@ -154,17 +166,16 @@ class Draw(QWidget):
         self.repaint()
         log.appendPlainText(f"{self.get_time_str()}Canvas cleared.")
     
-    def showResult(self, result, log):
+    def printResult(self, log):
         """ Displays the result """
         #For now just prints the inside or outside
-        if result:
-            for poly in result:
-                print(f"INSIDE {poly.id}")
+        if self.__result:
+            for poly in self.__result:
                 log.appendPlainText(f"    INSIDE {poly.id}")
             return
         
-        print("OUTSIDE")
         log.appendPlainText(f"    OUTSIDE")
+
     
     def analyze(self, option, log):
         """ Runs the analyzation from the selected method """
@@ -172,8 +183,8 @@ class Draw(QWidget):
         polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
         pol_count = len(polygons)
     
-
-        result = []
+        #Reset the result
+        self.__result = []
 
         match option:
             #Ray crossing
@@ -183,7 +194,7 @@ class Draw(QWidget):
                     #Check if the point lays in that polygon
                     if self.__algo.analyzePointAndPolygonRC(self.__q, poly):
                         #If True, append the polygon id
-                        result.append(poly)
+                        self.__result.append(poly)
             
             #Winding number
             case 2:
@@ -192,9 +203,10 @@ class Draw(QWidget):
                     #Check if the point lays in that polygon
                     if self.__algo.analyzePointAndPolygonWN(self.__q, poly):
                         #If True, append the polygon id
-                        result.append(poly)
+                        self.__result.append(poly)
         
-        self.showResult(result, log)
+        self.printResult(log)
+        self.repaint()
         return True
     
     def get_time_str(self):
