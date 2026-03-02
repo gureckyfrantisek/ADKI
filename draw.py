@@ -181,6 +181,8 @@ class Draw(QWidget):
         """ Runs the analyzation from the selected method """
         #Here we can run the preselection with min/max boxes
         log.appendPlainText(f"{self.get_time_str()}Starting analysis.")
+        QApplication.processEvents()    #Force event handling
+
         polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
         pol_count = len(polygons)
         log.appendPlainText(f"{self.get_time_str()}The point lays in {pol_count} bounding boxes.")
@@ -213,7 +215,7 @@ class Draw(QWidget):
     
     def get_time_str(self):
         now = datetime.datetime.now()
-        time = str(now.time()).split(".")[0]
+        time = str(now.time())
         return f"[{time}] "
     
     def bboxToQPoint(self, bbox, offset):
