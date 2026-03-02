@@ -75,7 +75,7 @@ class Algorithms:
         """ Analyze point and polygon position using Winding Number Algorithm """
         #Initialize
         Omega = 0           #Sum of angles
-        tolerance = sys.float_info.epsilon * 10e3
+        tolerance = sys.float_info.epsilon * 10e8
         n = len(pol)        #Number of polygon points
 
         #For all points
@@ -86,11 +86,11 @@ class Algorithms:
             #Determine position
             position = self.analyzePointAndLineRelation(q, p_i, p_ii)
 
-            #If we're on the line, return True for being inside
+            #If we're on the line, check if it's in coordinate range
             #This takes care of the singular cases aswell
-            if position == 0:
-                return True
-            
+            if position == 0 and q.x() >= min(p_i.x(), p_ii.x()) and q.y() >= min(p_i.y(), p_ii.y()) and q.x() <= max(p_i.x(), p_ii.x()) and q.y() <= max(p_i.y(), p_ii.y()):
+                    return True
+                
             #Calculate angle (p_i, q, p_ii)
             angle = self.calculateAngle(p_i, q, p_ii)
             

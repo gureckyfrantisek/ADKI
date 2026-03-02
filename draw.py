@@ -180,6 +180,7 @@ class Draw(QWidget):
     def analyze(self, option, log):
         """ Runs the analyzation from the selected method """
         #Here we can run the preselection with min/max boxes
+        log.appendPlainText(f"{self.get_time_str()}Starting analysis.")
         polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
         pol_count = len(polygons)
         log.appendPlainText(f"{self.get_time_str()}The point lays in {pol_count} bounding boxes.")
