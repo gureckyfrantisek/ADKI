@@ -61,6 +61,7 @@ class Ui_MainForm(object):
         icon1.addPixmap(QtGui.QPixmap(f"{file_path}/icons/open_file.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionOpen.setIcon(icon1)
         self.actionOpen.setObjectName("actionOpen")
+        self.actionOpen.triggered.connect(lambda: self.Canvas.handleFileOpen(self.Log))
         self.actionPoint_polygon = QtGui.QAction(parent=MainForm)
         self.actionPoint_polygon.setCheckable(True)
         self.actionPoint_polygon.triggered.connect(lambda: self.Canvas.changeStatus(self.Log))
