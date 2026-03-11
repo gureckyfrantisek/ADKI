@@ -44,6 +44,18 @@ class Algorithms:
         return distance
     
     
+    def analyzePointAndLineRelation(self, q, a, b):
+        """ Analyze the point and oriented line relation """
+        # Calculate the cross product
+        cross = (b.x() - a.x()) * (q.y() - a.y()) - (b.y() - a.y()) * (q.x() - a.x())
+
+        tolerance = sys.float_info.epsilon * 10
+
+        if cross > tolerance:  return  1   # left  / above
+        if cross < -tolerance: return -1   # right / below
+        return 0    
+    
+    
     def createCH(self, pol: QPolygonF):
         """Creates Convex Hull of inserted polygon"""
         # Graham Scan (can add more methods later)
