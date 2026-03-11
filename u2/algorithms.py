@@ -30,3 +30,14 @@ class Algorithms:
         phi = acos(dot / (norm_u * norm_v))
         
         return phi
+    
+    
+    def get2PointDistance(self, p1, p2):
+        #x, y distance
+        dx = p2.x() - p1.x()
+        dy = p2.y() - p1.y()
+        
+        # distance
+        distance = sqrt(dx**2 + dy**2)
+        return distance
+    
