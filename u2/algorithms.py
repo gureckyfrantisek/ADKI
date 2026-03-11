@@ -101,7 +101,7 @@ class Algorithms:
         for pointList in pointDistAngle:
             starShape.append(pointList[0])
             
-        #Graham cycle
+        ###Graham cycle
         # imports stack from collections module
         stack = deque() 
         j = 2
@@ -120,9 +120,75 @@ class Algorithms:
             stack.append(starShape[j])
 
             j += 1
-            
+        
+        #creates QPolygonF from stack
         convexHull = QPolygonF()
         while stack:
             convexHull.append(stack.pop())
             
         return convexHull
+    
+    
+    def rotatePolygon(self, pol:QPolygonF, sig:float):
+        """Rotates polygon and returns it"""
+        rotated_pol = QPolygonF()
+        
+        for point in pol:
+            # each point is transformed
+            x_r = cos(sig)*point.x() - sin(sig)*point.y()
+            y_r = sin(sig)*point.x() + cos(sig)*point.y()
+            rotated_pol.append(QPointF(x_r, y_r)) # adds point to new rotated polygon
+            
+        return rotated_pol
+    
+    
+    def createMAER(self, pol:QPolygonF):
+        """Creates Minimal Area Enclosing Rectangle"""
+        #input: ConvexHull QPolygonF
+        minimal_rectangle = self.minMaxBox(pol) #QRectF object
+        minimal_area = self.getRectArea(minimal_rectangle) 
+        minimal_sig = 0
+        
+        n = len(pol)
+        # for each edge
+        for i in range(n-1):
+            # extracts two points
+            head = pol[i+1]
+            tail = pol[i]
+            # calculates sigma angle
+            sig = atan2(head.y()-tail.y(), head.x()-tail.x())
+            if sig < 0:
+                sig += 2*pi
+            
+            # rotates the polygon and calculates it's area
+            rotated_pol = self.rotatePolygon(pol, -sig)
+            current_rectangle = self.minMaxBox(rotated_pol) #QRectF object
+            current_area = self.getRectArea(current_rectangle) 
+
+            # saves the parametrs if area is smaller
+            if current_area < minimal_area:
+                minimal_area = current_area
+                minimal_rectangle = current_rectangle
+                minimal_sig = sig
+                
+        minimal_polygon = self.QRectToQPolygon(minimal_rectangle)
+        minimal_bounding_rectangle = self.rotatePolygon(minimal_polygon, minimal_sig)
+        return minimal_bounding_rectangle
+            
+    def minMaxBox(self, pol:QPolygonF):
+        # returnes minmaxbox of QPolygonF as QRectF 
+        return pol.boundingRect()
+        
+    def QRectToQPolygon(self, rect:QRectF):
+        # converts QRectF to QPolygonF
+        pol = QPolygonF()
+        pol.append(rect.topLeft())
+        pol.append(rect.bottomLeft())
+        pol.append(rect.bottomRight())
+        pol.append(rect.topRight())
+        return pol
+    
+    def getRectArea(self, rect:QRectF):
+        return rect.width() * rect.height()
+        
+    
