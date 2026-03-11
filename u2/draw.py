@@ -280,3 +280,20 @@ class Draw(QWidget):
 
         #Display the new polygons
         self.repaint()
+        
+        
+    def getPoint(self):
+        #Get analyzed point
+        return self.__q
+    
+    
+    def getPolygon(self):
+        #Get polygon 
+        return self.__pol
+    
+
+    def appendPolygon(self, pol):
+        #Appends polygon to private list
+        new_pol = Polygon(id=1)
+        new_pol.addQPolygonF(pol)
+        self.__pol.append(new_pol)
