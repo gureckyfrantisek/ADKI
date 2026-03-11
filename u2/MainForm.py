@@ -8,6 +8,7 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from draw import Draw
+from algorithms import Algorithms
 import os
 
 
@@ -19,11 +20,21 @@ class Ui_MainForm(object):
         
         self.centralwidget = QtWidgets.QWidget(parent=MainForm)
         self.centralwidget.setObjectName("centralwidget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.widget = Draw(parent=self.centralwidget)
-        self.widget.setObjectName("widget")
-        self.horizontalLayout.addWidget(self.widget)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
+        self.Canvas = Draw(parent=self.centralwidget)
+        self.Canvas.setObjectName("Canvas")
+        self.Canvas.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.Canvas.setStyleSheet("background-color: lightgrey;")
+        self.Alg = Algorithms()
+        self.splitter.addWidget(self.Canvas)
+        self.Log = QtWidgets.QPlainTextEdit()
+        self.Log.setReadOnly(True)
+        self.splitter.addWidget(self.Log)
+        #Give more space to Canvas
+        self.splitter.setSizes([400, 100])
+        self.verticalLayout.addWidget(self.splitter)
         MainForm.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainForm)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1115, 26))
