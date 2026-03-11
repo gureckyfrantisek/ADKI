@@ -20,7 +20,8 @@ class Draw(QWidget):
         self.__pan = [0, 0]
         self.__pan_change = 40
         self.__result = []
-       
+
+
     def wheelEvent(self, event):
         #Handles mouse wheel inputs
         delta = event.angleDelta().y()
@@ -297,3 +298,13 @@ class Draw(QWidget):
         new_pol = Polygon(id=1)
         new_pol.addQPolygonF(pol)
         self.__pol.append(new_pol)
+        
+        
+    def clearSelection(self, log):
+        """ Clears entire canvas """
+        self.__q = QPointF(-100, -100)
+        self.__pol = [Polygon()]
+        
+        #Repaints cleared screen
+        self.repaint()
+        log.appendPlainText(f"{self.get_time_str()}Canvas cleared.")
