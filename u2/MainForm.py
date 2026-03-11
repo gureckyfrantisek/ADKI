@@ -68,6 +68,7 @@ class Ui_MainForm(object):
         iconMaer.addPixmap(QtGui.QPixmap(f"{file_path}\icons\maer.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionMinimal_Bounding_Rectangle.setIcon(iconMaer)
         self.actionMinimal_Bounding_Rectangle.setObjectName("actionMinimal_Bounding_Rectangle")
+        self.actionMinimal_Bounding_Rectangle.triggered.connect(self.MAERClick)
         self.actionPCA = QtGui.QAction(parent=MainForm)
         iconPCA = QtGui.QIcon()
         iconPCA.addPixmap(QtGui.QPixmap(f"{file_path}\icons\pca.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -83,6 +84,7 @@ class Ui_MainForm(object):
         iconClearAll.addPixmap(QtGui.QPixmap(f"{file_path}\icons\clear_er.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionClear_All.setIcon(iconClearAll)
         self.actionClear_All.setObjectName("actionClear_All")
+        self.actionClear_All.triggered.connect(lambda: self.Canvas.clearSelection(self.Log))
         self.actionWeighted_Isector = QtGui.QAction(parent=MainForm)
         iconWB = QtGui.QIcon()
         iconWB.addPixmap(QtGui.QPixmap(f"{file_path}\icons\weightedbisector.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -147,6 +149,17 @@ class Ui_MainForm(object):
         self.actionWeighted_Isector.setText(_translate("MainForm", "Weighted Isector"))
         self.actionWall_Average.setText(_translate("MainForm", "Wall Average"))
         self.actionLongest_Edge.setText(_translate("MainForm", "Longest Edge"))
+        
+    def MAERClick(self):
+        q = self.Canvas.getPoint()
+        pol = self.Canvas.getPolygon()
+        # creates convexHull
+        convexHull = self.Alg.createCH(pol[0])
+        maer = self.Alg.createMAER(convexHull)
+        
+        self.Canvas.appendPolygon(maer)
+        self.Canvas.repaint()
+        
 
 
 if __name__ == "__main__":
