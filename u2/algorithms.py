@@ -28,10 +28,14 @@ class Algorithms:
         norm_u = sqrt(ux**2 + uy**2)
         norm_v = sqrt(vx**2 + vy**2)
         
-        #Compute phi
-        phi = acos(dot / (norm_u * norm_v))
-        
-        return phi
+        #If distance between points is 0, return 0
+        if norm_u == 0 or norm_v == 0:
+            return 0.0
+
+        #Clamp the cos value to avoid error from float imprecision
+        cos_phi = max(-1.0, min(1.0, (dot) / (norm_u * norm_v)))
+
+        return acos(cos_phi)
     
     
     def get2PointDistance(self, p1, p2):
