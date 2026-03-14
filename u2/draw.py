@@ -13,9 +13,9 @@ class Draw(QWidget):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) #Enables key inputs
         self.__pol = [Polygon()]    #An array of all polygons on screen with their id
         self.__zoom = 1
-        self.__zoom_change = 0.9
+        self.__zoom_change = 0.75
         self.__pan = [0, 0]
-        self.__pan_change = 40
+        self.__pan_change = 60
         self.__result = []
 
 
@@ -23,6 +23,14 @@ class Draw(QWidget):
         #Handles mouse wheel inputs
         delta = event.angleDelta().y()
 
+        #Stores mouse position
+        mouse_pos = event.position()  # QPointF
+        mx = mouse_pos.x()
+        my = mouse_pos.y()
+
+        old_zoom = self.__zoom
+
+        #Changes zoom level
         if delta > 0:
             #Zoom in
             if self.__zoom < 1000:
@@ -30,10 +38,20 @@ class Draw(QWidget):
         else:
             #Zoom out
             self.__zoom *= self.__zoom_change
-            
-        print(self.__zoom)
-        self.repaint()
-        event.accept()  #Mark event as handled
+
+        #Canvas coordinates of mouse location
+        world_x = mx / old_zoom - self.__pan[0]
+        world_y = my / old_zoom - self.__pan[1]
+
+        #Pan change based on mouse location
+        self.__pan[0] = mx / self.__zoom - world_x
+        self.__pan[1] = my / self.__zoom - world_y
+
+        self.__cache_dirty = True
+        self.update()  # redraws surface
+
+        event.accept()
+        
         
     def keyPressEvent(self, event: QKeyEvent):
         #Handles key inputs
