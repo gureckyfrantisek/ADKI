@@ -156,14 +156,19 @@ class Ui_MainForm(object):
         # creates convexHull
         self.Canvas.clearResult()
         
+        # does nothing if polygons do not exist
+        if pol[0].isEmpty():
+            self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}No polygon was inserted.")
+            return
+            
         for poly in pol:
             convexHull = self.Alg.createCH(poly)
             maer = self.Alg.createMAER(convexHull)
             self.Canvas.appendResult(maer)
-            
-        self.Canvas.repaint()
+                
+        self.Canvas.trueCacheDirty() # 
+        self.Canvas.update()  # redraws surface
         
-
 
 if __name__ == "__main__":
     import sys

@@ -1,7 +1,6 @@
 from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
-from algorithms import Algorithms
 from polygon import Polygon
 import shapefile as shp
 import datetime
@@ -17,6 +16,9 @@ class Draw(QWidget):
         self.__pan = [0, 0]
         self.__pan_change = 60
         self.__result = []
+        self.__polygon_cache = QPixmap(self.size())
+        self.__polygon_cache.fill(Qt.GlobalColor.transparent)
+        self.__cache_dirty = True
 
 
     def wheelEvent(self, event):
@@ -69,8 +71,9 @@ class Draw(QWidget):
         elif event.key() == Qt.Key.Key_Right:
             self.__pan[0] -= self.__pan_change / self.__zoom
 
-        print(self.__pan)
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
+        
         
     def mousePressEvent(self, e):
         #Get position
@@ -94,7 +97,9 @@ class Draw(QWidget):
         self.__pol[0].addVertex(p)
             
         #Repaint screen
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
+
 
     def recalculateFeatures(self, zoom_change):
         # Momentálně se nepoužívá, mění přímo souřadnice bodů, což asi nechceme
@@ -107,48 +112,45 @@ class Draw(QWidget):
         
         self.__pol = new_polygons
 
+
     def paintEvent(self, e):
-        #Repaint screen
-        
-        #New object
+        """ Repaints the screen """
+        if self.__cache_dirty:
+            
+            #Creates polygon cache
+            self.__polygon_cache = QPixmap(self.size())
+            self.__polygon_cache.fill(Qt.GlobalColor.transparent)
+
+            #New cache painter
+            cache_painter = QPainter(self.__polygon_cache)
+            
+            #Transform definition for polygons
+            transform = QTransform()
+            transform.scale(self.__zoom, self.__zoom)
+            transform.translate(self.__pan[0], self.__pan[1])
+            
+            #Draw all polygons
+            cache_painter.setPen(Qt.GlobalColor.red)
+            cache_painter.setBrush(Qt.GlobalColor.yellow)
+            for poly in self.__pol:
+                cache_painter.drawPolygon(transform.map(poly))
+            
+            #Draw result polygons
+            cache_painter.setPen(Qt.GlobalColor.blue)
+            cache_painter.setBrush(Qt.GlobalColor.cyan)
+            cache_painter.setOpacity(0.4)
+            for poly in self.__result:
+                cache_painter.drawPolygon(transform.map(poly))
+            
+            #End draw
+            cache_painter.end()
+            
+            self.__cache_dirty = False
+            
+        #Paint cached image to canvas
         qp = QPainter(self)
-        
-        #Start draw
-        qp.begin(self)
-        
-        #Graphic attributes, polygon
-        qp.setPen(Qt.GlobalColor.red)
-        qp.setBrush(Qt.GlobalColor.yellow)
-        
-        #Transform definition for polygons
-        transform = QTransform()
-        transform.scale(self.__zoom, self.__zoom)
-        transform.translate(self.__pan[0], self.__pan[1])
-        
-        #Draw all polygons
-        qp.setPen(Qt.GlobalColor.red)
-        qp.setBrush(Qt.GlobalColor.yellow)
-        for poly in self.__pol:
-            qp.drawPolygon(transform.map(poly))
-        
-        #Draw result polygons
-        qp.setPen(Qt.GlobalColor.blue)
-        qp.setBrush(Qt.GlobalColor.cyan)
-        qp.setOpacity(0.4)
-        for poly in self.__result:
-            qp.drawPolygon(transform.map(poly))
-        
-        #End draw
-        qp.end()
-        
-    def clearSelection(self, log):
-        """ Clears entire canvas """
-        self.__q = QPointF(-100, -100)
-        self.__pol = [Polygon()]
-        
-        #Repaints cleared screen
-        self.repaint()
-        log.appendPlainText(f"{self.get_time_str()}Canvas cleared.")
+        qp.drawPixmap(0, 0, self.__polygon_cache)
+
     
     def printResult(self, log):
         """ Displays the result """
@@ -161,7 +163,7 @@ class Draw(QWidget):
         log.appendPlainText(f"    OUTSIDE")
 
     
-    def get_time_str(self):
+    def getTimeStr(self):
         now = datetime.datetime.now()
         time = str(now.time())
         return f"[{time}] "
@@ -193,14 +195,14 @@ class Draw(QWidget):
 
             self.__pol.append(poly)
         
-        log.appendPlainText(f"{self.get_time_str()}Loaded {len(self.__pol)} polygon(s) from file.")
+        log.appendPlainText(f"{self.getTimeStr()}Loaded {len(self.__pol)} polygon(s) from file.")
     
     def getFile(self, log):
-        log.appendPlainText(f"{self.get_time_str()}Opening file dialog.")
+        log.appendPlainText(f"{self.getTimeStr()}Opening file dialog.")
 
         file, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Shapefiles (*.shp);;All Files (*)")
         
-        log.appendPlainText(f"{self.get_time_str()}File open: {file}.")
+        log.appendPlainText(f"{self.getTimeStr()}File open: {file}.")
 
         return file
     
@@ -223,11 +225,9 @@ class Draw(QWidget):
             self.__pan = [350000, 200000]
             self.__zoom = 0.0012
 
-        #Change input mode to point
-        self.__add_vertex = False
-
         #Display the new polygons
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
     
     
     def getPolygon(self):
@@ -252,13 +252,17 @@ class Draw(QWidget):
         self.__result = []
         
         #Repaints cleared screen
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
 
     def clearSelection(self, log):
         """ Clears entire canvas """
         self.__pol = [Polygon()]
         self.__result = []
-        
+        self.__cache_dirty = True
         #Repaints cleared screen
-        self.repaint()
-        log.appendPlainText(f"{self.get_time_str()}Canvas cleared.")
+        self.update()
+        log.appendPlainText(f"{self.getTimeStr()}Canvas cleared.")
+        
+    def trueCacheDirty(self):
+        self.__cache_dirty = not(self.__cache_dirty)
