@@ -106,18 +106,6 @@ class Draw(QWidget):
         #Repaint screen
         self.repaint()
 
-    def recalculateFeatures(self, zoom_change):
-        # Momentálně se nepoužívá, mění přímo souřadnice bodů, což asi nechceme
-        self.__q = QPointF(self.__q.x()*zoom_change, self.__q.y()*zoom_change)
-        
-        new_polygons = []
-        for pol in self.__pol:
-            scaled = Polygon()
-            for point in pol:
-                scaled.append(QPointF(point.x()*zoom_change, point.y()*zoom_change))
-            new_polygons.append(scaled)
-        
-        self.__pol = new_polygons
 
     def paintEvent(self, e):
         #Repaint screen
