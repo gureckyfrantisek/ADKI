@@ -145,7 +145,7 @@ class Algorithms:
         # Preprocess
         points.sort(key=lambda p: p.x())
 
-        position = self.analyzePointAndLineRelation(points[0], points[1], points[2])
+        position = self.analyzePointAndLineRelation(points[2], points[0], points[1])
         if position == 0:
             return
             

@@ -12,9 +12,6 @@ class Draw(QWidget):
         super().__init__(*args, **kwargs)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) #Enables key inputs
         self.__pol = [Polygon()]    #An array of all polygons on screen with their id
-        self.__q = QPointF(-100, -100)
-        self.__add_vertex = True
-        self.__algo = Algorithms()
         self.__zoom = 1
         self.__zoom_change = 0.9
         self.__pan = [0, 0]
@@ -72,26 +69,17 @@ class Draw(QWidget):
         x = x_widget/self.__zoom - self.__pan[0]
         y = y_widget/self.__zoom - self.__pan[1]
         
-        #Add new vertex to polygon
-        if self.__add_vertex:
-            #Create new point
-            p = QPointF(x,y)
-            
-            #Add point to polygon
-            self.__pol[0].addVertex(p)
-            
-        #Change q position
-        else:
-            self.__q.setX(x)
-            self.__q.setY(y)
+        #Create new point
+        p = QPointF(x,y)
+        
+        #Add point to polygon
+        self.__pol[0].addVertex(p)
             
         #Repaint screen
         self.repaint()
 
     def recalculateFeatures(self, zoom_change):
         # Momentálně se nepoužívá, mění přímo souřadnice bodů, což asi nechceme
-        self.__q = QPointF(self.__q.x()*zoom_change, self.__q.y()*zoom_change)
-        
         new_polygons = []
         for pol in self.__pol:
             scaled = Polygon()
@@ -120,43 +108,20 @@ class Draw(QWidget):
         transform.translate(self.__pan[0], self.__pan[1])
         
         #Draw all polygons
+        qp.setPen(Qt.GlobalColor.red)
+        qp.setBrush(Qt.GlobalColor.yellow)
         for poly in self.__pol:
-            #If it's the result poly, color it red
-            if poly in self.__result:
-                qp.setPen(Qt.GlobalColor.yellow)
-                qp.setBrush(Qt.GlobalColor.red)
-            
-                qp.drawPolygon(transform.map(poly))
-                
-                qp.setPen(Qt.GlobalColor.red)
-                qp.setBrush(Qt.GlobalColor.yellow)
-
-            else:
-                qp.drawPolygon(transform.map(poly))
-                
-        #Graphic attributes, point
-        qp.setPen(Qt.GlobalColor.black)
-        qp.setBrush(Qt.GlobalColor.white)
+            qp.drawPolygon(transform.map(poly))
         
-        #Point radius
-        r = 5
-        transformed_x = (self.__q.x() + self.__pan[0])*self.__zoom
-        transformed_y = (self.__q.y() + self.__pan[1])*self.__zoom
-        qp.drawEllipse(int(transformed_x - r) , int(transformed_y - r) , 2*r, 2*r )
+        #Draw result polygons
+        qp.setPen(Qt.GlobalColor.blue)
+        qp.setBrush(Qt.GlobalColor.cyan)
+        qp.setOpacity(0.4)
+        for poly in self.__result:
+            qp.drawPolygon(transform.map(poly))
         
         #End draw
         qp.end()
-        
-        
-    def changeStatus(self, log):
-        """ Changes status: draw point / polygon """
-        self.__add_vertex = not(self.__add_vertex)
-        
-        if self.__add_vertex:
-            log.appendPlainText(f"{self.get_time_str()}Polygon selected.")
-        else:
-            log.appendPlainText(f"{self.get_time_str()}Point selected.")
-        
         
     def clearSelection(self, log):
         """ Clears entire canvas """
@@ -177,42 +142,6 @@ class Draw(QWidget):
         
         log.appendPlainText(f"    OUTSIDE")
 
-    
-    def analyze(self, option, log):
-        """ Runs the analyzation from the selected method """
-        #Here we can run the preselection with min/max boxes
-        log.appendPlainText(f"{self.get_time_str()}Starting analysis.")
-        QApplication.processEvents()    #Force event handling
-
-        polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
-        pol_count = len(polygons)
-        log.appendPlainText(f"{self.get_time_str()}The point lays in {pol_count} bounding boxes.")
-    
-        #Reset the result
-        self.__result = []
-
-        match option:
-            #Ray crossing
-            case 1:
-                log.appendPlainText(f"{self.get_time_str()}Analyze point (Ray crossing).")
-                for poly in polygons:
-                    #Check if the point lays in that polygon
-                    if self.__algo.analyzePointAndPolygonRC(self.__q, poly):
-                        #If True, append the polygon id
-                        self.__result.append(poly)
-            
-            #Winding number
-            case 2:
-                log.appendPlainText(f"{self.get_time_str()}Analyze point (Winding number).")
-                for poly in polygons:
-                    #Check if the point lays in that polygon
-                    if self.__algo.analyzePointAndPolygonWN(self.__q, poly):
-                        #If True, append the polygon id
-                        self.__result.append(poly)
-        
-        self.printResult(log)
-        self.repaint()
-        return True
     
     def get_time_str(self):
         now = datetime.datetime.now()
@@ -281,11 +210,6 @@ class Draw(QWidget):
 
         #Display the new polygons
         self.repaint()
-        
-        
-    def getPoint(self):
-        #Get analyzed point
-        return self.__q
     
     
     def getPolygon(self):
@@ -299,11 +223,23 @@ class Draw(QWidget):
         new_pol.addQPolygonF(pol)
         self.__pol.append(new_pol)
         
+    def appendResult(self, pol):
+        #Appends polygon to private result list
+        new_pol = Polygon(id=1)
+        new_pol.addQPolygonF(pol)
+        self.__result.append(new_pol)
         
+    def clearResult(self):
+        """ Clears the result """
+        self.__result = []
+        
+        #Repaints cleared screen
+        self.repaint()
+
     def clearSelection(self, log):
         """ Clears entire canvas """
-        self.__q = QPointF(-100, -100)
         self.__pol = [Polygon()]
+        self.__result = []
         
         #Repaints cleared screen
         self.repaint()
