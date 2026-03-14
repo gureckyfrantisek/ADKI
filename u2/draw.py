@@ -265,4 +265,4 @@ class Draw(QWidget):
         log.appendPlainText(f"{self.getTimeStr()}Canvas cleared.")
         
     def trueCacheDirty(self):
-        self.__cache_dirty = not(self.__cache_dirty)
+        self.__cache_dirty = True
