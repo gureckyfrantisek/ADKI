@@ -128,7 +128,64 @@ class Algorithms:
             
         return convexHull
     
-    
+    def createCHSweepingLine(self, pol: QPolygonF):
+        """Creates Convex Hull using the sweeping line method"""
+        
+        # Edge case
+        n = len(pol)
+
+        if n <= 2:
+            return False
+        
+        # Initialize
+        points = list(pol)
+        next = [-1] * (n+1)
+        prev = [-1] * (n+1)
+
+        # Preprocess
+        points.sort(key=lambda p: p.x())
+
+        position = self.analyzePointAndLineRelation(points[0], points[1], points[2])
+        if position == 0:
+            return
+            
+        elif position == 1:
+            next[0] = 1; next[1] = 2; next[2] = 0
+            prev[0] = 2; prev[1] = 0; prev[2] = 1
+
+        else:
+            next[0] = 2; next[1] = 1; next[2] = 0
+            prev[0] = 1; prev[1] = 0; prev[2] = 2
+
+        # Iterate over the rest of the points and add them continuously
+        for i in range(3, n):
+            if points[i].y() > points[i-1].y():
+                prev[i] = i-1; next[i] = next[i-1]
+            else:
+                next[i] = i-1; prev[i] = prev[i-1]
+
+            next[prev[i]] = i; prev[next[i]] = i
+
+            while self.analyzePointAndLineRelation(points[next[next[i]]], points[i], points[next[i]]) == -1:
+                prev[next[next[i]]] = i; next[i] = next[next[i]]
+            
+            while self.analyzePointAndLineRelation(points[prev[prev[i]]], points[i], points[prev[i]]) == 1:
+                next[prev[prev[i]]] = i; prev[i] = prev[prev[i]]
+        
+        # Translate the datastructure back to a QPolygonF
+        convexHull = QPolygonF()
+        index = 0
+
+        print("Starting reconstruction")
+        while True:
+            convexHull.append(points[index])
+            index = next[index]
+            print(f"Reconstruction index: {index}")
+
+            # When we return, end the cycle
+            if index == 0:
+                return convexHull
+
     def rotatePolygon(self, pol:QPolygonF, sig:float):
         """Rotates polygon and returns it"""
         rotated_pol = QPolygonF()
