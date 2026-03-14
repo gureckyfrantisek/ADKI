@@ -58,6 +58,7 @@ class Ui_MainForm(object):
         print(f"{file_path}\icons\open.png")
         self.actionOpen.setIcon(iconOpen)
         self.actionOpen.setObjectName("actionOpen")
+        self.actionOpen.triggered.connect(lambda: self.Canvas.handleFileOpen(self.Log))
         self.actionExit = QtGui.QAction(parent=MainForm)
         iconExit = QtGui.QIcon()
         iconExit.addPixmap(QtGui.QPixmap(f"{file_path}\icons\exit.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -153,11 +154,13 @@ class Ui_MainForm(object):
     def MAERClick(self):
         pol = self.Canvas.getPolygon()
         # creates convexHull
-        convexHull = self.Alg.createCH(pol[0])
-        maer = self.Alg.createMAER(convexHull)
-        
         self.Canvas.clearResult()
-        self.Canvas.appendResult(maer)
+        
+        for poly in pol:
+            convexHull = self.Alg.createCH(poly)
+            maer = self.Alg.createMAER(convexHull)
+            self.Canvas.appendResult(maer)
+            
         self.Canvas.repaint()
         
 
