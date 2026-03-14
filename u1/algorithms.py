@@ -9,6 +9,24 @@ class Algorithms:
     def __init__(self):
         pass
     
+    
+    def point_on_segment(self, q, a, b):
+        """ Check if point intresects a line segment """
+        
+        tolerance = sys.float_info.epsilon * 10
+        #Cross product: if bigger than 0 -> outside of the line
+        cross = (b.x() - a.x()) * (q.y() - a.y()) - (b.y() - a.y()) * (q.x() - a.x())
+        if abs(cross) > tolerance:
+            return False
+
+        # check if within line bounding box
+        if (min(a.x(), b.x()) <= q.x() <= max(a.x(), b.x()) and
+            min(a.y(), b.y()) <= q.y() <= max(a.y(), b.y())):
+            return True
+
+        return False
+    
+    
     def analyzePointAndPolygonRC(self, q, pol):
         """ Analyze point and polygon position using Ray Crossing Algorithm """
         k = 0            # number of intrescts
@@ -16,6 +34,13 @@ class Algorithms:
         
         # Process all points
         for i in range(n):
+            a = pol[i]
+            b = pol[(i + 1) % n]
+
+            #Checks for boundary case
+            if self.point_on_segment(q, a, b):
+                return True
+            
             #Calculate x and y differences
             xi_red = pol[i].x() - q.x()
             yi_red = pol[i].y() - q.y()
