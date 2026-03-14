@@ -9,3 +9,7 @@ class Polygon(QPolygonF):
 
     def addVertex(self, vertex):
         self.append(vertex)
+        
+    def addQPolygonF(self, pol:QPolygonF):
+        for point in pol:
+            self.addVertex(point)

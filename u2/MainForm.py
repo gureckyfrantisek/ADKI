@@ -8,6 +8,7 @@
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 from draw import Draw
+from algorithms import Algorithms
 import os
 
 
@@ -19,11 +20,21 @@ class Ui_MainForm(object):
         
         self.centralwidget = QtWidgets.QWidget(parent=MainForm)
         self.centralwidget.setObjectName("centralwidget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.widget = Draw(parent=self.centralwidget)
-        self.widget.setObjectName("widget")
-        self.horizontalLayout.addWidget(self.widget)
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.centralwidget)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.splitter = QtWidgets.QSplitter(QtCore.Qt.Orientation.Vertical)
+        self.Canvas = Draw(parent=self.centralwidget)
+        self.Canvas.setObjectName("Canvas")
+        self.Canvas.setAttribute(QtCore.Qt.WidgetAttribute.WA_StyledBackground, True)
+        self.Canvas.setStyleSheet("background-color: lightgrey;")
+        self.Alg = Algorithms()
+        self.splitter.addWidget(self.Canvas)
+        self.Log = QtWidgets.QPlainTextEdit()
+        self.Log.setReadOnly(True)
+        self.splitter.addWidget(self.Log)
+        #Give more space to Canvas
+        self.splitter.setSizes([400, 100])
+        self.verticalLayout.addWidget(self.splitter)
         MainForm.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainForm)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1115, 26))
@@ -47,6 +58,7 @@ class Ui_MainForm(object):
         print(f"{file_path}\icons\open.png")
         self.actionOpen.setIcon(iconOpen)
         self.actionOpen.setObjectName("actionOpen")
+        self.actionOpen.triggered.connect(lambda: self.Canvas.handleFileOpen(self.Log))
         self.actionExit = QtGui.QAction(parent=MainForm)
         iconExit = QtGui.QIcon()
         iconExit.addPixmap(QtGui.QPixmap(f"{file_path}\icons\exit.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -57,6 +69,7 @@ class Ui_MainForm(object):
         iconMaer.addPixmap(QtGui.QPixmap(f"{file_path}\icons\maer.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionMinimal_Bounding_Rectangle.setIcon(iconMaer)
         self.actionMinimal_Bounding_Rectangle.setObjectName("actionMinimal_Bounding_Rectangle")
+        self.actionMinimal_Bounding_Rectangle.triggered.connect(self.MAERClick)
         self.actionPCA = QtGui.QAction(parent=MainForm)
         iconPCA = QtGui.QIcon()
         iconPCA.addPixmap(QtGui.QPixmap(f"{file_path}\icons\pca.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -72,6 +85,7 @@ class Ui_MainForm(object):
         iconClearAll.addPixmap(QtGui.QPixmap(f"{file_path}\icons\clear_er.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionClear_All.setIcon(iconClearAll)
         self.actionClear_All.setObjectName("actionClear_All")
+        self.actionClear_All.triggered.connect(lambda: self.Canvas.clearSelection(self.Log))
         self.actionWeighted_Isector = QtGui.QAction(parent=MainForm)
         iconWB = QtGui.QIcon()
         iconWB.addPixmap(QtGui.QPixmap(f"{file_path}\icons\weightedbisector.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -136,6 +150,19 @@ class Ui_MainForm(object):
         self.actionWeighted_Isector.setText(_translate("MainForm", "Weighted Isector"))
         self.actionWall_Average.setText(_translate("MainForm", "Wall Average"))
         self.actionLongest_Edge.setText(_translate("MainForm", "Longest Edge"))
+        
+    def MAERClick(self):
+        pol = self.Canvas.getPolygon()
+        # creates convexHull
+        self.Canvas.clearResult()
+        
+        for poly in pol:
+            convexHull = self.Alg.createCH(poly)
+            maer = self.Alg.createMAER(convexHull)
+            self.Canvas.appendResult(maer)
+            
+        self.Canvas.repaint()
+        
 
 
 if __name__ == "__main__":
