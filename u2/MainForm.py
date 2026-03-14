@@ -151,13 +151,13 @@ class Ui_MainForm(object):
         self.actionLongest_Edge.setText(_translate("MainForm", "Longest Edge"))
         
     def MAERClick(self):
-        q = self.Canvas.getPoint()
         pol = self.Canvas.getPolygon()
         # creates convexHull
         convexHull = self.Alg.createCH(pol[0])
         maer = self.Alg.createMAER(convexHull)
         
-        self.Canvas.appendPolygon(maer)
+        self.Canvas.clearResult()
+        self.Canvas.appendResult(maer)
         self.Canvas.repaint()
         
 
