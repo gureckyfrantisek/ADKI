@@ -16,26 +16,45 @@ class Draw(QWidget):
         self.__add_vertex = True
         self.__algo = Algorithms()
         self.__zoom = 1
-        self.__zoom_change = 0.9
+        self.__zoom_change = 0.75
         self.__pan = [0, 0]
-        self.__pan_change = 40
+        self.__pan_change = 50
         self.__result = []
+        self.__draw_polygon = True
+        self.__polygon_cache = QPixmap(self.size())
+        self.__polygon_cache.fill(Qt.GlobalColor.transparent)
+        self.__cache_dirty = True
        
     def wheelEvent(self, event):
         #Handles mouse wheel inputs
         delta = event.angleDelta().y()
 
+        #Stores mouse position
+        mouse_pos = event.position()  # QPointF
+        mx = mouse_pos.x()
+        my = mouse_pos.y()
+
+        old_zoom = self.__zoom
+
+        #Changes zoom level
         if delta > 0:
-            #Zoom in
             if self.__zoom < 1000:
                 self.__zoom /= self.__zoom_change
         else:
-            #Zoom out
             self.__zoom *= self.__zoom_change
-            
-        print(self.__zoom)
-        self.repaint()
-        event.accept()  #Mark event as handled
+
+        #Canvas coordinates of mouse location
+        world_x = mx / old_zoom - self.__pan[0]
+        world_y = my / old_zoom - self.__pan[1]
+
+        #Pan change based on mouse location
+        self.__pan[0] = mx / self.__zoom - world_x
+        self.__pan[1] = my / self.__zoom - world_y
+
+        self.__cache_dirty = True
+        self.update()  # redraws surface
+
+        event.accept()
         
     def keyPressEvent(self, event: QKeyEvent):
         #Handles key inputs
@@ -136,35 +155,36 @@ class Draw(QWidget):
         #Graphic attributes, point
         qp.setPen(Qt.GlobalColor.black)
         qp.setBrush(Qt.GlobalColor.white)
-        
+
         #Point radius
         r = 5
-        transformed_x = (self.__q.x() + self.__pan[0])*self.__zoom
-        transformed_y = (self.__q.y() + self.__pan[1])*self.__zoom
-        qp.drawEllipse(int(transformed_x - r) , int(transformed_y - r) , 2*r, 2*r )
+        transformed_x = (self.__q.x() + self.__pan[0]) * self.__zoom
+        transformed_y = (self.__q.y() + self.__pan[1]) * self.__zoom
+
+        qp.drawEllipse(int(transformed_x - r), int(transformed_y - r), 2*r, 2*r)
         
-        #End draw
+        #End Draw
         qp.end()
-        
-        
+            
+            
     def changeStatus(self, log):
         """ Changes status: draw point / polygon """
         self.__add_vertex = not(self.__add_vertex)
         
         if self.__add_vertex:
-            log.appendPlainText(f"{self.get_time_str()}Polygon selected.")
+            log.appendPlainText(f"{self.getTimeStr()}Polygon selected.")
         else:
-            log.appendPlainText(f"{self.get_time_str()}Point selected.")
+            log.appendPlainText(f"{self.getTimeStr()}Point selected.")
         
         
     def clearSelection(self, log):
         """ Clears entire canvas """
         self.__q = QPointF(-100, -100)
         self.__pol = [Polygon()]
-        
+        self.__cache_dirty = True
         #Repaints cleared screen
-        self.repaint()
-        log.appendPlainText(f"{self.get_time_str()}Canvas cleared.")
+        self.update()
+        log.appendPlainText(f"{self.getTimeStr()}Canvas cleared.")
     
     def printResult(self, log):
         """ Displays the result """
@@ -180,12 +200,12 @@ class Draw(QWidget):
     def analyze(self, option, log):
         """ Runs the analyzation from the selected method """
         #Here we can run the preselection with min/max boxes
-        log.appendPlainText(f"{self.get_time_str()}Starting analysis.")
+        log.appendPlainText(f"{self.getTimeStr()}Starting analysis.")
         QApplication.processEvents()    #Force event handling
 
         polygons = self.__algo.preselectMinMax(self.__q, self.__pol)
         pol_count = len(polygons)
-        log.appendPlainText(f"{self.get_time_str()}The point lays in {pol_count} bounding boxes.")
+        log.appendPlainText(f"{self.getTimeStr()}The point lays in {pol_count} bounding boxes.")
     
         #Reset the result
         self.__result = []
@@ -193,7 +213,7 @@ class Draw(QWidget):
         match option:
             #Ray crossing
             case 1:
-                log.appendPlainText(f"{self.get_time_str()}Analyze point (Ray crossing).")
+                log.appendPlainText(f"{self.getTimeStr()}Analyze point (Ray crossing).")
                 for poly in polygons:
                     #Check if the point lays in that polygon
                     if self.__algo.analyzePointAndPolygonRC(self.__q, poly):
@@ -202,7 +222,7 @@ class Draw(QWidget):
             
             #Winding number
             case 2:
-                log.appendPlainText(f"{self.get_time_str()}Analyze point (Winding number).")
+                log.appendPlainText(f"{self.getTimeStr()}Analyze point (Winding number).")
                 for poly in polygons:
                     #Check if the point lays in that polygon
                     if self.__algo.analyzePointAndPolygonWN(self.__q, poly):
@@ -210,10 +230,11 @@ class Draw(QWidget):
                         self.__result.append(poly)
         
         self.printResult(log)
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
         return True
     
-    def get_time_str(self):
+    def getTimeStr(self):
         now = datetime.datetime.now()
         time = str(now.time())
         return f"[{time}] "
@@ -245,14 +266,14 @@ class Draw(QWidget):
 
             self.__pol.append(poly)
         
-        log.appendPlainText(f"{self.get_time_str()}Loaded {len(self.__pol)} polygon(s) from file.")
+        log.appendPlainText(f"{self.getTimeStr()}Loaded {len(self.__pol)} polygon(s) from file.")
     
     def getFile(self, log):
-        log.appendPlainText(f"{self.get_time_str()}Opening file dialog.")
+        log.appendPlainText(f"{self.getTimeStr()}Opening file dialog.")
 
         file, _ = QFileDialog.getOpenFileName(self, "Open File", "", "Shapefiles (*.shp);;All Files (*)")
         
-        log.appendPlainText(f"{self.get_time_str()}File open: {file}.")
+        log.appendPlainText(f"{self.getTimeStr()}File open: {file}.")
 
         return file
     
@@ -279,4 +300,5 @@ class Draw(QWidget):
         self.__add_vertex = False
 
         #Display the new polygons
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
