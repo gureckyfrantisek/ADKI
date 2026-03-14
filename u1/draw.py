@@ -72,8 +72,8 @@ class Draw(QWidget):
         elif event.key() == Qt.Key.Key_Right:
             self.__pan[0] -= self.__pan_change / self.__zoom
 
-        print(self.__pan)
-        self.repaint()
+        self.__cache_dirty = True
+        self.update()
         
     def mousePressEvent(self, e):
         #Get position
@@ -97,6 +97,7 @@ class Draw(QWidget):
             
             #Add point to polygon
             self.__pol[0].addVertex(p)
+            self.__cache_dirty = True
             
         #Change q position
         else:
@@ -104,42 +105,58 @@ class Draw(QWidget):
             self.__q.setY(y)
             
         #Repaint screen
-        self.repaint()
+        self.update()
 
 
-    def paintEvent(self, e):
-        #Repaint screen
-        
-        #New object
-        qp = QPainter(self)
-        
-        #Start draw
-        qp.begin(self)
-        
+    def redraw_polygon_cache(self):
+        #Creates polygon cache
+        self.__polygon_cache = QPixmap(self.size())
+        self.__polygon_cache.fill(Qt.GlobalColor.transparent)
+
+        qp = QPainter(self.__polygon_cache)
+
         #Graphic attributes, polygon
         qp.setPen(Qt.GlobalColor.red)
         qp.setBrush(Qt.GlobalColor.yellow)
-        
+
         #Transform definition for polygons
         transform = QTransform()
         transform.scale(self.__zoom, self.__zoom)
         transform.translate(self.__pan[0], self.__pan[1])
-        
+
         #Draw all polygons
         for poly in self.__pol:
             #If it's the result poly, color it red
             if poly in self.__result:
                 qp.setPen(Qt.GlobalColor.yellow)
                 qp.setBrush(Qt.GlobalColor.red)
-            
                 qp.drawPolygon(transform.map(poly))
-                
                 qp.setPen(Qt.GlobalColor.red)
                 qp.setBrush(Qt.GlobalColor.yellow)
-
             else:
                 qp.drawPolygon(transform.map(poly))
-                
+
+        qp.end()
+        self.__cache_dirty = False
+
+
+    def paintEvent(self, e):
+        #Repaint screen 
+        
+        #New object
+        qp = QPainter(self)
+        
+        #Start draw 
+        qp.begin(self)
+
+        #Draws polygon
+        if self.__draw_polygon:
+            if self.__cache_dirty:
+                self.redraw_polygon_cache()
+
+            qp.drawPixmap(0, 0, self.__polygon_cache)
+
+        #Draws point
         #Graphic attributes, point
         qp.setPen(Qt.GlobalColor.black)
         qp.setBrush(Qt.GlobalColor.white)
