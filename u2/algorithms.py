@@ -131,6 +131,57 @@ class Algorithms:
             convexHull.append(stack.pop())
             
         return convexHull
+       
+    def createCH(self, pol:QPolygonF):
+        """ Bayer version """
+        #Create Convex Hull using Jarvis Scan
+        ch = QPolygonF()
+        
+        #Find pivot q (minimize y)
+        q = min(pol, key = lambda k: k.y())
+
+        #Find left-most point (minimize x)
+        s = min(pol, key = lambda k: k.x())
+        
+        #Initial segment
+        pj = q
+        pj1 = QPointF(s.x(), q.y())
+        
+        #Add to CH
+        ch.append(pj)
+        
+        # Find all points of CH
+        while True:
+            #Maximum and its index
+            omega_max = 0
+            index_max = -1
+            
+            #Browse all points
+            for i in range(len(pol)):
+                
+                if pj != pol[i]:
+                    
+                    #Compute omega
+                    omega = self.get2LinesAngle(pj, pj1, pj, pol[i])
+            
+                    #Actualize maximum
+                    if(omega>omega_max):
+                        omega_max = omega
+                        index_max = i
+                    
+            #Add point to the convex hull
+            ch.append(pol[index_max])
+            
+            #Reasign points
+            pj1 = pj
+            pj = pol[index_max]
+            
+            # Stopping condition
+            if pj == q:
+                break
+            
+        return ch
+    
     
     def createCHSweepingLine(self, pol: QPolygonF):
         """Creates Convex Hull using the sweeping line method"""
@@ -212,9 +263,9 @@ class Algorithms:
         
         n = len(pol)
         # for each edge
-        for i in range(n-1):
+        for i in range(n):
             # extracts two points
-            head = pol[i+1]
+            head = pol[(i+1) % n]
             tail = pol[i]
             # calculates sigma angle
             sig = atan2(head.y()-tail.y(), head.x()-tail.x())
@@ -251,5 +302,31 @@ class Algorithms:
     
     def getRectArea(self, rect:QRectF):
         return rect.width() * rect.height()
+    
+    def getPolygonArea(self, pol: QPolygonF):
+        #Calculate polygon area  using LH formula
+        area = 0
+        n = len(pol)
+
+        #Process all edges
+        for i in range(1, n):
+            area += pol[i].x() * (pol[(i+1)%n].y() - pol[(i-1+n)%n].y())
         
+        return abs(area)/2
+    
+    def resizeRectangle(self, rect: QPolygonF, build: QPolygonF):
+        #Resize MAER to have a similar area as a rectangle
+        
+        #Area of the rectangle
+        rect_area = self.getPolygonArea(rect)
+        
+        #Area of the building
+        build_area = self.getPolygonArea(build)
+        
+        #Area ratio
+        k = build_area / rect_area
+        
+        #Compute rectangle centroid
+        x_c = (rect[0].x() + rect[1].x() + rect[2].x() + rect[3].x()) / 4
+        y_c = (rect[0].y() + rect[1].y() + rect[2].y() + rect[3].y()) / 4
     
