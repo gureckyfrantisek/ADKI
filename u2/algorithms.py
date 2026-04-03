@@ -393,6 +393,72 @@ class Algorithms:
         rot_mmb = self.rotatePolygon(res_mmb, sigma)
         
         return rot_mmb
-    
-    
+
+
+    def simplifyBuildingWA(self, building):
+        #Simplify building using the Wall Average method    
+
+        #number of points in the building polygon
+        n = len(building)
+
+        #Calculate sigmas for each line segment
+        sigmas = []
+        for point in range(n):
+            #Head of the line segment
+            head = building[(point+1) % n]
+
+            #Tail of the line segment
+            tail = building[point % n]
+
+            #Sigma at the end of the line segment
+            sig = atan2(head.y()-tail.y(), head.x()-tail.x())
+
+            #Makes sure sigma is positive
+            if sig < 0:
+                sig += 2*pi
+            sigmas.append(sig)
+
+        #Sum of the lenghts of the line segments
+        sum_s = 0
+        #Sum of the remainders multiplied by the line segment lengths
+        weighted_sigma_sum = 0
+
+        for i in range(n):
+            #Calculates inner angle the line segment
+            omega = sigmas[i % n] - sigmas[(i - 1) % n]
+
+            #Normalize omega to be in the range (-pi, pi)
+            while omega <= -pi:
+                omega += 2 * pi
+            while omega > pi:
+                omega -= 2 * pi
+
+            #remainder after division
+            k = round(omega / (pi / 2))
+            r = omega - k * (pi / 2)
+
+            s = self.get2PointDistance(building[i % n], building[(i + 1) % n])
+
+            #Calculates sums for weighted average
+            weighted_sigma_sum += r * s
+            sum_s += s
+
+        #Calculates rotation angle
+        rot_sigma = sigmas[0] + weighted_sigma_sum/sum_s
+
+        #Rotate building
+        building_rot = self.rotatePolygon(building, -rot_sigma)
+
+        #Compute min-max box 
+        mmb = self.minMaxBox(building_rot)
+        
+        #Resize MMB
+        res_mmb = self.resizeRectangle(mmb, building)
+        
+        #Rotate MMB
+        rot_mmb = self.rotatePolygon(res_mmb, rot_sigma)
+        
+        return rot_mmb
+        
+        
     

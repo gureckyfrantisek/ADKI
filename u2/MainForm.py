@@ -97,6 +97,7 @@ class Ui_MainForm(object):
         iconWA.addPixmap(QtGui.QPixmap(f"{file_path}\icons\wa.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionWall_Average.setIcon(iconWA)
         self.actionWall_Average.setObjectName("actionWall_Average")
+        self.actionWall_Average.triggered.connect(self.simplifyWAClick)
         self.actionLongest_Edge = QtGui.QAction(parent=MainForm)
         iconLE = QtGui.QIcon()
         iconLE.addPixmap(QtGui.QPixmap(f"{file_path}\icons\longestedge.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -191,7 +192,27 @@ class Ui_MainForm(object):
         
         self.Canvas.trueCacheDirty() # 
         self.Canvas.update()  # redraws surface
+
+
+    def simplifyWAClick(self):
+        #Simplify building using Wall Average
+        pol = self.Canvas.getPolygon()
+        # creates convexHull
+        self.Canvas.clearResult()
+
+        # does nothing if polygons do not exist
+        if pol[0].isEmpty():
+            self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}No polygon was inserted.")
+            return
         
+        #Processes all polygons
+        for poly in pol:
+            #Simplify 
+            rec = self.Alg.simplifyBuildingWA(poly)
+            self.Canvas.appendResult(rec)
+        
+        self.Canvas.trueCacheDirty() # 
+        self.Canvas.update()  # redraws surface
 
 if __name__ == "__main__":
     import sys
