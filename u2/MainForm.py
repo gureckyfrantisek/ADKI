@@ -75,6 +75,7 @@ class Ui_MainForm(object):
         iconPCA.addPixmap(QtGui.QPixmap(f"{file_path}\icons\pca.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionPCA.setIcon(iconPCA)
         self.actionPCA.setObjectName("actionPCA")
+        self.actionPCA.triggered.connect(self.simplifyPCAClick)
         self.actionClear_Results = QtGui.QAction(parent=MainForm)
         iconClearResults = QtGui.QIcon()
         iconClearResults.addPixmap(QtGui.QPixmap(f"{file_path}\icons\clear_ch.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -167,6 +168,27 @@ class Ui_MainForm(object):
             res_maer = self.Alg.resizeRectangle(maer, poly)
             self.Canvas.appendResult(res_maer)
                 
+        self.Canvas.trueCacheDirty() # 
+        self.Canvas.update()  # redraws surface
+
+
+    def simplifyPCAClick(self):
+        #Simplify building using PCA
+        pol = self.Canvas.getPolygon()
+        # creates convexHull
+        self.Canvas.clearResult()
+
+        # does nothing if polygons do not exist
+        if pol[0].isEmpty():
+            self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}No polygon was inserted.")
+            return
+        
+        #Processes all polygons
+        for poly in pol:
+            #Simplify 
+            rec = self.Alg.simplifyBuildingPCA(poly)
+            self.Canvas.appendResult(rec)
+        
         self.Canvas.trueCacheDirty() # 
         self.Canvas.update()  # redraws surface
         

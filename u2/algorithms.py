@@ -4,6 +4,9 @@ from PyQt6.QtWidgets import *
 from math import *
 from collections import deque
 import sys
+import numpy as np
+import numpy.linalg as npla
+
 
 class Algorithms:
     
@@ -322,7 +325,7 @@ class Algorithms:
         n = len(pol)
 
         #Process all edges
-        for i in range(1, n):
+        for i in range(n):
             area += pol[i].x() * (pol[(i+1)%n].y() - pol[(i-1+n)%n].y())
         
         return abs(area)/2
@@ -354,5 +357,42 @@ class Algorithms:
             res_rect.append(QPointF((rect[i].x() - x_c)*sqrt(k) + x_c, (rect[i].y() - y_c)*sqrt(k) + y_c))
         
         return res_rect
+    
+
+    def simplifyBuildingPCA(self, building):
+        #Simplify building using Principal Components Analysis
+        x, y = [], []
+        
+        #Convert points to coordinates
+        for b in building:
+            x.append(b.x())
+            y.append(b.y())
+            
+        #Create matrix
+        A = np.array([x, y])
+        
+        #Covariance matrix
+        C = np.cov(A)
+        
+        #Singlar value decomposition
+        [U, S, V] = npla.svd(C)
+        
+        #Compute rotation
+        sigma = atan2(V[0][1], V[0][0])
+        
+        #Rotate building
+        building_rot = self.rotatePolygon(building, -sigma)
+
+        #Compute min-max box 
+        mmb = self.minMaxBox(building_rot)
+        
+        #Resize MMB
+        res_mmb = self.resizeRectangle(mmb, building)
+        
+        #Rotate MMB
+        rot_mmb = self.rotatePolygon(res_mmb, sigma)
+        
+        return rot_mmb
+    
     
     
