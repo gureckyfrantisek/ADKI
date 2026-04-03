@@ -60,7 +60,7 @@ class Algorithms:
         return 0    
     
     
-    def createCH(self, pol: QPolygonF):
+    def createCHConvexHull(self, pol: QPolygonF):
         """Creates Convex Hull of inserted polygon"""
         # Graham Scan (can add more methods later)
         print("začátek CH")
@@ -132,7 +132,7 @@ class Algorithms:
             
         return convexHull
        
-    def createCH(self, pol:QPolygonF):
+    def createCHBayerVersion(self, pol:QPolygonF):
         """ Bayer version """
         #Create Convex Hull using Jarvis Scan
         ch = QPolygonF()
@@ -240,6 +240,19 @@ class Algorithms:
             # When we return, end the cycle
             if index == 0:
                 return convexHull
+            
+
+    def createCH(self, pol:QPolygonF, method="convexHull"):
+        """Creates Convex Hull of inserted polygon"""
+
+        #Selects the method to create Convex Hull
+        if method == "convexHull":
+            return self.createCHConvexHull(pol)
+        elif method == "bayer":
+            return self.createCHBayerVersion(pol)
+        elif method == "sweepingLine":
+            return self.createCHSweepingLine(pol)
+
 
     def rotatePolygon(self, pol:QPolygonF, sig:float):
         """Rotates polygon and returns it"""
@@ -317,6 +330,10 @@ class Algorithms:
     def resizeRectangle(self, rect: QPolygonF, build: QPolygonF):
         #Resize MAER to have a similar area as a rectangle
         
+        #Converts QRectF to QPolygonF if needed
+        if isinstance(rect, QRectF):
+            rect = self.QRectToQPolygon(rect)
+
         #Area of the rectangle
         rect_area = self.getPolygonArea(rect)
         
@@ -324,9 +341,18 @@ class Algorithms:
         build_area = self.getPolygonArea(build)
         
         #Area ratio
-        k = build_area / rect_area
+        k = (build_area / rect_area)
         
         #Compute rectangle centroid
         x_c = (rect[0].x() + rect[1].x() + rect[2].x() + rect[3].x()) / 4
         y_c = (rect[0].y() + rect[1].y() + rect[2].y() + rect[3].y()) / 4
+        
+        #Resized polygon
+        res_rect = QPolygonF()
+
+        for i in range(4):
+            res_rect.append(QPointF((rect[i].x() - x_c)*sqrt(k) + x_c, (rect[i].y() - y_c)*sqrt(k) + y_c))
+        
+        return res_rect
+    
     

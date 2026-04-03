@@ -69,7 +69,7 @@ class Ui_MainForm(object):
         iconMaer.addPixmap(QtGui.QPixmap(f"{file_path}\icons\maer.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionMinimal_Bounding_Rectangle.setIcon(iconMaer)
         self.actionMinimal_Bounding_Rectangle.setObjectName("actionMinimal_Bounding_Rectangle")
-        self.actionMinimal_Bounding_Rectangle.triggered.connect(self.MAERClick)
+        self.actionMinimal_Bounding_Rectangle.triggered.connect(self.simplifyMAERClick)
         self.actionPCA = QtGui.QAction(parent=MainForm)
         iconPCA = QtGui.QIcon()
         iconPCA.addPixmap(QtGui.QPixmap(f"{file_path}\icons\pca.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -151,7 +151,7 @@ class Ui_MainForm(object):
         self.actionWall_Average.setText(_translate("MainForm", "Wall Average"))
         self.actionLongest_Edge.setText(_translate("MainForm", "Longest Edge"))
         
-    def MAERClick(self):
+    def simplifyMAERClick(self):
         pol = self.Canvas.getPolygon()
         # creates convexHull
         self.Canvas.clearResult()
@@ -162,9 +162,10 @@ class Ui_MainForm(object):
             return
             
         for poly in pol:
-            convexHull = self.Alg.createCH(poly)
+            convexHull = self.Alg.createCH(poly, method="convexHull")
             maer = self.Alg.createMAER(convexHull)
-            self.Canvas.appendResult(maer)
+            res_maer = self.Alg.resizeRectangle(maer, poly)
+            self.Canvas.appendResult(res_maer)
                 
         self.Canvas.trueCacheDirty() # 
         self.Canvas.update()  # redraws surface
