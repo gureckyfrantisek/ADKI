@@ -543,5 +543,111 @@ class Algorithms:
         rot_mmb = self.rotatePolygon(res_mmb, sigma_avg)
         
         return rot_mmb
-        
     
+
+    def getStatisticsSummary(self, polygons, log):
+        """Summarizes the efectiveness of detection of the main direction of the building"""
+
+        #Polygon count in the dataset
+        polygon_count = len(polygons)
+
+        #Counts of wrong detections (not squared deviations)
+        numberWrongPolygonsDelta1 = 0
+
+        #Counts of wrong detections (squared deviations)
+        numberWrongPolygonsDelta2 = 0
+
+        #Acceptance threshold for correct detection of the main direction of the building
+        acceptanceThreshold = 10* (pi/180) #10 degrees in radians
+        
+        #Process all polygons
+        for poly in polygons:
+            #Get vertices count
+            n = len(poly)
+
+            #Extracts MBR
+            mbr = poly.simplified_pol
+
+            #Calculates sigma of MBR
+            sigma = self.getMBRMainDirection(mbr)
+
+            #Calculates remainder of division by pi/2
+            k = 2*sigma / pi
+            r = (k - floor(k)) * (pi/2)
+
+            #Sum of polygon remainders subtracted by the main remainder
+            sum_delta1_r = 0      #Not squared version
+            sum_delta2_r = 0      #Squared version
+            
+            for point in range(n):
+                #Head of the line segment
+                head = poly[(point+1) % n]
+
+                #Tail of the line segment
+                tail = poly[point % n]
+
+                #Sigma at the end of the line segment
+                segment_sigma = atan2(head.y()-tail.y(), head.x()-tail.x())
+
+                #Calculates remainder of division by pi/2
+                k_i = 2*segment_sigma / pi
+                r_i = (k_i - floor(k_i)) * (pi/2)
+
+                #Add the difference of the remainders to the sum of deltas
+                sum_delta1_r += (r_i - r)
+                sum_delta2_r += (r_i - r)**2
+
+            #Polygon evaluation
+            delta_sigma_1 = pi/(2*n) * sum_delta1_r
+            delta_sigma_2 = pi/(2*n) * sqrt(sum_delta2_r)
+
+            #Sets classified to True, rewrites it to False if the detection is wrong
+            poly.classified = True
+            if delta_sigma_1 > acceptanceThreshold:
+                poly.classified = False
+                numberWrongPolygonsDelta1 += 1
+
+            if delta_sigma_2 > acceptanceThreshold:
+                poly.classified = False
+                numberWrongPolygonsDelta2 += 1
+
+        #Logs the summary
+        wrong1 = (numberWrongPolygonsDelta1)/polygon_count * 100
+        wrong2 = (numberWrongPolygonsDelta2)/polygon_count * 100
+        correct1 = 100 - wrong1
+        correct2 = 100 - wrong2
+
+        log.appendPlainText(f"Mean value of line segment angle deviations:")
+        log.appendPlainText(f"\t Correctly simplified polygons: {correct1:.2f}%")
+        log.appendPlainText(f"\t Uncorrectly simplified polygons: {wrong1:.2f}%")
+        log.appendPlainText(f"Mean value of line segment SQUARED angle deviations:")
+        log.appendPlainText(f"\t Correctly simplified polygons: {correct2:.2f}%")
+        log.appendPlainText(f"\t Uncorrectly simplified polygons: {wrong2:.2f}%")
+
+
+    def getMBRMainDirection(self, poly):
+        """Finds the direction of thelongest edge"""
+
+        #Checks if the polygon has 4 vertices
+        n = len(poly)
+
+        if n != 4:
+            return None
+        
+        #Extracts three consecutive points
+        p1 = poly[0]
+        p2 = poly[1]
+        p3 = poly[2]
+
+        #Calculates the distance between first and second point
+        dx1 = p2.x() - p1.x()
+        dy1 = p2.y() - p1.y()
+        s1 = sqrt(dx1**2 + dy1**2)
+
+        #Calculates the distance between second and third point
+        dx2 = p3.x() - p2.x()
+        dy2 = p3.y() - p2.y()
+        s2 = sqrt(dx2**2 + dy2**2)
+
+        #Returns the main direction based on the longest edge
+        return atan2(dy1, dx1) if s1 >= s2 else atan2(dy2, dx2)

@@ -135,12 +135,45 @@ class Draw(QWidget):
             for poly in self.__pol:
                 cache_painter.drawPolygon(transform.map(poly))
             
-            #Draw result polygons
+            
+            """#Draw result polygons
             cache_painter.setPen(Qt.GlobalColor.blue)
             cache_painter.setBrush(Qt.GlobalColor.cyan)
             cache_painter.setOpacity(0.4)
             for poly in self.__result:
-                cache_painter.drawPolygon(transform.map(poly))
+                cache_painter.drawPolygon(transform.map(poly))"""
+            
+            #Draw result polygons with summary style
+            #Correct summary result
+            cache_painter.setPen(Qt.GlobalColor.blue)
+            cache_painter.setBrush(Qt.GlobalColor.cyan)
+            cache_painter.setOpacity(0.4)
+            for poly in self.__pol:
+                #If polygon is wrongly classified, it skips the for loop
+                if not poly.classified:
+                    continue
+                
+                #Leave it here, otherwise the program crashes
+                if poly.simplified_pol is None:
+                    continue
+
+                cache_painter.drawPolygon(transform.map(poly.simplified_pol))
+
+            #Wrong summary result
+            cache_painter.setPen(Qt.GlobalColor.darkRed)
+            cache_painter.setBrush(Qt.GlobalColor.red)
+            cache_painter.setOpacity(0.4)
+            for poly in self.__pol:
+                #If polygon is correct, it skips the for loop
+                if poly.classified:
+                    continue
+
+                #Leave it here, otherwise the program crashes
+                if poly.simplified_pol is None:
+                    print("DEBUG: simplified_pol is None for", poly)
+                    continue
+                
+                cache_painter.drawPolygon(transform.map(poly.simplified_pol))
             
             #End draw
             cache_painter.end()
@@ -241,11 +274,12 @@ class Draw(QWidget):
         new_pol.addQPolygonF(pol)
         self.__pol.append(new_pol)
         
-    def appendResult(self, pol):
+    def appendResult(self, rec, original_pol):
         #Appends polygon to private result list
-        new_pol = Polygon(id=1)
-        new_pol.addQPolygonF(pol)
+        new_pol = Polygon(id=original_pol.id)
+        new_pol.addQPolygonF(rec)
         self.__result.append(new_pol)
+        original_pol.simplified_pol = rec
         
     def clearResult(self):
         """ Clears the result """
