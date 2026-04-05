@@ -166,6 +166,9 @@ class Ui_MainForm(object):
             
         for poly in pol:
             convexHull = self.Alg.createCH(poly, method="convexHull")
+            if not convexHull:
+                self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}Couldn't create convex hull for the given polygon.")
+                return
             maer = self.Alg.createMAER(convexHull)
             res_maer = self.Alg.resizeRectangle(maer, poly)
             self.Canvas.appendResult(res_maer)
