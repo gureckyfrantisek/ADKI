@@ -172,10 +172,9 @@ class Ui_MainForm(object):
                 return
             maer = self.Alg.createMAER(convexHull)
             res_maer = self.Alg.resizeRectangle(maer, poly)
-            self.Canvas.appendResult(res_maer)
-                
-        self.Canvas.trueCacheDirty() # 
-        self.Canvas.update()  # redraws surface
+            self.Canvas.appendResult(res_maer, poly)
+        
+        self.finishClick()
 
 
     def simplifyPCAClick(self):
@@ -193,10 +192,9 @@ class Ui_MainForm(object):
         for poly in pol:
             #Simplify 
             rec = self.Alg.simplifyBuildingPCA(poly)
-            self.Canvas.appendResult(rec)
+            self.Canvas.appendResult(rec, poly)
         
-        self.Canvas.trueCacheDirty() # 
-        self.Canvas.update()  # redraws surface
+        self.finishClick()
 
         
     def simplifyLongestEdgeClick(self):
@@ -213,10 +211,9 @@ class Ui_MainForm(object):
         for poly in pol:
             #Simplify 
             rec = self.Alg.simplifyBuildingLongestEdge(poly)
-            self.Canvas.appendResult(rec)
+            self.Canvas.appendResult(rec, poly)
         
-        self.Canvas.trueCacheDirty() # 
-        self.Canvas.update()  # redraws surface
+        self.finishClick()
         
 
     def simplifyWallAverageClick(self):
@@ -233,8 +230,14 @@ class Ui_MainForm(object):
         for poly in pol:
             #Simplify 
             rec = self.Alg.simplifyBuildingWallAverageAdam(poly)
-            self.Canvas.appendResult(rec)
-        
+            self.Canvas.appendResult(rec, poly)
+
+        self.finishClick()
+
+    
+    def finishClick(self):
+        self.Log.appendPlainText(f"\n{self.Canvas.getTimeStr()}Main edge detection SUMMARY:")
+        self.Alg.getStatisticsSummary(self.Canvas.getPolygon(), self.Log)
         self.Canvas.trueCacheDirty() 
         self.Canvas.update()  # redraws surface
         
