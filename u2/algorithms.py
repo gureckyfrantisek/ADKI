@@ -399,7 +399,7 @@ class Algorithms:
         return rot_mmb
 
 
-    def simplifyBuildingWA(self, building):
+    def simplifyBuildingWallAverageAdam(self, building):
         #Simplify building using the Wall Average method    
 
         #number of points in the building polygon
@@ -470,7 +470,7 @@ class Algorithms:
         n = len(building)
         
         max_length = 0
-        simga = 0
+        sigma = 0
         
         # Find the longest edge and its orientation
         for point in range(n):
@@ -502,7 +502,7 @@ class Algorithms:
         return rot_mmb
                 
         
-    def simplifyBuildingWallAverage(self,building):
+    def simplifyBuildingWallAverageVitek(self,building):
         # Simplify building using wall average method
         
         n = len(building)
