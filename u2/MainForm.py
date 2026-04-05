@@ -103,6 +103,7 @@ class Ui_MainForm(object):
         iconLE.addPixmap(QtGui.QPixmap(f"{file_path}\icons\longestedge.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionLongest_Edge.setIcon(iconLE)
         self.actionLongest_Edge.setObjectName("actionLongest_Edge")
+        self.actionLongest_Edge.triggered.connect(self.simplifyLongestEdgeClick)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionExit)
@@ -165,6 +166,9 @@ class Ui_MainForm(object):
             
         for poly in pol:
             convexHull = self.Alg.createCH(poly, method="convexHull")
+            if not convexHull:
+                self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}Couldn't create convex hull for the given polygon.")
+                return
             maer = self.Alg.createMAER(convexHull)
             res_maer = self.Alg.resizeRectangle(maer, poly)
             self.Canvas.appendResult(res_maer)
@@ -213,6 +217,49 @@ class Ui_MainForm(object):
         
         self.Canvas.trueCacheDirty() # 
         self.Canvas.update()  # redraws surface
+        
+        
+    def simplifyLongestEdgeClick(self):
+        #Simplify building using longest edge
+        pol = self.Canvas.getPolygon()
+        # creates convexHull
+        self.Canvas.clearResult()
+        # does nothing if polygons do not exist
+        if pol[0].isEmpty():
+            self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}No polygon was inserted.")
+            return
+        
+        #Processes all polygons
+        for poly in pol:
+            #Simplify 
+            rec = self.Alg.simplifyBuildingLongestEdge(poly)
+            self.Canvas.appendResult(rec)
+        
+        self.Canvas.trueCacheDirty() # 
+        self.Canvas.update()  # redraws surface
+        
+    def simplifyWallAverageClick(self):
+        #Simplify building using Wall Average method
+        pol = self.Canvas.getPolygon()
+        self.Canvas.clearResult()
+        
+        # does nothing if polygons do not exist
+        if pol[0].isEmpty():
+            self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}No polygon was inserted.")
+            return
+        
+        #Processes all polygons
+        for poly in pol:
+            #Simplify 
+            rec = self.Alg.simplifyBuildingWallAverage(poly)
+            self.Canvas.appendResult(rec)
+        
+        self.Canvas.trueCacheDirty() 
+        self.Canvas.update()  # redraws surface
+        
+        
+    
+        
 
 if __name__ == "__main__":
     import sys
