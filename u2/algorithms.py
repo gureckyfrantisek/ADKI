@@ -50,11 +50,14 @@ class Algorithms:
         distance = sqrt(dx**2 + dy**2)
         return distance
     
+    def crossProduct(self, q, a, b):
+        """Calculates the cross product for a point and line"""
+        return (b.x() - a.x()) * (q.y() - a.y()) - (b.y() - a.y()) * (q.x() - a.x())
     
     def analyzePointAndLineRelation(self, q, a, b):
         """ Analyze the point and oriented line relation """
         # Calculate the cross product
-        cross = (b.x() - a.x()) * (q.y() - a.y()) - (b.y() - a.y()) * (q.x() - a.x())
+        cross = self.crossProduct(q, a, b)
 
         tolerance = sys.float_info.epsilon * 10
 
@@ -544,7 +547,67 @@ class Algorithms:
         
         return rot_mmb
     
+    def updateMaxDiagonals(self, s1, s2, sig1, sig2, new_s, new_sig):
+        print('UPDATING')
+        if new_s <= s2: return s1, s2, sig1, sig2
+        
+        if new_s > s1:
+            return new_s, s1, new_sig, sig1
+        
+        if new_s > s2:
+            return s1, new_s, sig1, new_sig
+        
+    def simplifyBuildingWeightedBisector(self, building: QPolygonF):
+        """Simplifies the given building using the Weighted Bisector method"""
+        #Source: https://codeforces.com/blog/entry/133763
+        #and: https://www.geeksforgeeks.org/dsa/maximum-distance-between-two-points-in-coordinate-plane-using-rotating-calipers-method/
+        #The longest bisectors use the convex hull points
+        ch = self.createCHConvexHull(building)
 
+        n = len(ch)
+        s1 = 0
+        s2 = 0
+        sig1 = 0
+        sig2 = 0
+
+        #Use the rotating calipers to find the two longest bisections
+        # Base Cases
+        if n <= 2:
+            return False
+        k = 1
+
+        # Find the farthest vertex
+        # from ch[0] and ch[n-1] while the area gets larger
+        while self.crossProduct(ch[(k + 1) % n], ch[n - 1], ch[0]) > self.crossProduct(ch[k], ch[n - 1], ch[0]):
+            k += 1
+
+        # Check points from 0 to k
+        for i in range(k + 1):
+            j = (i + 1) % n
+            while self.crossProduct(ch[(j + 1) % n], ch[i], ch[(i + 1) % n]) > self.crossProduct(ch[j], ch[i], ch[(i + 1) % n]):
+                s = self.get2PointDistance(ch[i], ch[(j + 1) % n])
+                #Calculate the angle from the x axis
+                sig = self.get2LinesAngle(ch[i], ch[(j + 1) % n], 0, 1000)
+
+                # Update max distances and corresponding angles
+                print(s1, s2, sig1, sig2)
+                s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
+                j = (j + 1) % n
+
+        if s1 + s2 == 0: return False
+
+        #Calculate the weighted bisector
+        sig = (s1 * sig1 + s2 * sig2) / (s1 + s2)
+
+        #Rotate the building
+        building_rot = self.rotatePolygon(building, -sig)
+
+        #Build minimum bounding rectangle
+        mmb = self.minMaxBox(building_rot)
+
+        #Rotate back and return
+        return self.rotatePolygon(mmb, sig)
+        
     def getStatisticsSummary(self, polygons, log):
         """Summarizes the efectiveness of detection of the main direction of the building"""
 
