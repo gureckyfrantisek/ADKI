@@ -348,7 +348,10 @@ class Algorithms:
         build_area = self.getPolygonArea(build)
         
         #Area ratio
-        k = (build_area / rect_area)
+        if rect_area == 0:
+            k = 1
+        else:
+            k = (build_area / rect_area)
         
         #Compute rectangle centroid
         x_c = (rect[0].x() + rect[1].x() + rect[2].x() + rect[3].x()) / 4
