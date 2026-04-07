@@ -257,6 +257,8 @@ class Draw(QWidget):
         if file.find("/data/"):
             self.__pan = [350000, 200000]
             self.__zoom = 0.0012
+            
+        self.zoomToData()
 
         #Display the new polygons
         self.__cache_dirty = True
@@ -300,3 +302,39 @@ class Draw(QWidget):
         
     def trueCacheDirty(self):
         self.__cache_dirty = True
+        
+    def zoomToData(self):
+        if not self.__pol or self.__pol[0].isEmpty():
+            return
+
+        #Find bounding box of all polygons
+        x_min = float('inf')
+        x_max = float('-inf')
+        y_min = float('inf')
+        y_max = float('-inf')
+
+        for poly in self.__pol:
+            rect = poly.boundingRect()
+            x_min = min(x_min, rect.left())
+            x_max = max(x_max, rect.right())
+            y_min = min(y_min, rect.top())
+            y_max = max(y_max, rect.bottom())
+
+        data_width = x_max - x_min
+        data_height = y_max - y_min
+
+        if data_width == 0 or data_height == 0:
+            return
+
+        #Calculate zoom level to fit data in window with some padding
+        padding = 0.9
+        zoom_x = (self.width() * padding) / data_width
+        zoom_y = (self.height() * padding) / data_height
+        self.__zoom = min(zoom_x, zoom_y)
+
+        #Center the data in the window
+        self.__pan[0] = (self.width() / (2 * self.__zoom)) - (x_min + data_width / 2)
+        self.__pan[1] = (self.height() / (2 * self.__zoom)) - (y_min + data_height / 2)
+
+        self.__cache_dirty = True
+        self.update()
