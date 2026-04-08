@@ -585,14 +585,15 @@ class Algorithms:
         for i in range(k + 1):
             j = (i + 1) % n
             while self.crossProduct(ch[(j + 1) % n], ch[i], ch[(i + 1) % n]) > self.crossProduct(ch[j], ch[i], ch[(i + 1) % n]):
-                s = self.get2PointDistance(ch[i], ch[(j + 1) % n])
-                #Calculate the angle from the x axis
-                sig = self.get2LinesAngle(ch[i], ch[(j + 1) % n], 0, 1000)
-
-                # Update max distances and corresponding angles
-                print(s1, s2, sig1, sig2)
-                s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
                 j = (j + 1) % n
+            
+            s = self.get2PointDistance(ch[i], ch[(j + 1) % n])
+            #Calculate the angle from the x axis
+            sig = self.get2LinesAngle(ch[i], ch[(j + 1) % n], QPointF(0, 0), QPointF(0, 1000))
+
+            # Update max distances and corresponding angles
+            print(s1, s2, sig1, sig2)
+            s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
 
         if s1 + s2 == 0: return False
 
@@ -605,8 +606,11 @@ class Algorithms:
         #Build minimum bounding rectangle
         mmb = self.minMaxBox(building_rot)
 
+        #Convert to polygon
+        minimal_polygon = self.QRectToQPolygon(mmb)
+
         #Rotate back and return
-        return self.rotatePolygon(mmb, sig)
+        return self.rotatePolygon(minimal_polygon, sig)
         
     def getStatisticsSummary(self, polygons, log):
         """Summarizes the efectiveness of detection of the main direction of the building"""
