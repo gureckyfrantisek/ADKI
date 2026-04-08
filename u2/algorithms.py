@@ -40,6 +40,15 @@ class Algorithms:
 
         return acos(cos_phi)
     
+
+    def getAngleFromX(self, p1, p2):
+        ux = p2.x() - p1.x()
+        uy = p2.y() - p1.y()
+
+        #atan2 to return phi in (-π, π]
+        phi = atan2(uy, ux)
+        
+        return phi
     
     def get2PointDistance(self, p1, p2):
         #x, y distance
@@ -50,11 +59,14 @@ class Algorithms:
         distance = sqrt(dx**2 + dy**2)
         return distance
     
+    def crossProduct(self, q, a, b):
+        """Calculates the cross product for a point and line"""
+        return (b.x() - a.x()) * (q.y() - a.y()) - (b.y() - a.y()) * (q.x() - a.x())
     
     def analyzePointAndLineRelation(self, q, a, b):
         """ Analyze the point and oriented line relation """
         # Calculate the cross product
-        cross = (b.x() - a.x()) * (q.y() - a.y()) - (b.y() - a.y()) * (q.x() - a.x())
+        cross = self.crossProduct(q, a, b)
 
         tolerance = sys.float_info.epsilon * 10
 
@@ -547,7 +559,74 @@ class Algorithms:
         
         return rot_mmb
     
+    def updateMaxDiagonals(self, s1, s2, sig1, sig2, new_s, new_sig):
+        if new_s <= s2: return s1, s2, sig1, sig2
+        
+        if new_s > s1:
+            return new_s, s1, new_sig, sig1
+        
+        if new_s > s2:
+            return s1, new_s, sig1, new_sig
+        
+    def simplifyBuildingWeightedBisector(self, building: QPolygonF):
+        """Simplifies the given building using the Weighted Bisector method"""
+        #The longest bisectors use the convex hull points
+        ch = self.createCHConvexHull(building)
 
+        n = len(ch)
+        s1 = 0
+        s2 = 0
+        sig1 = 0
+        sig2 = 0
+
+        #We use brute force, since we need the two longest diagonals
+        #Base cases
+        if n <= 2:
+            return False
+
+        #Use set to track which diagonals we checked
+        seen = set()
+        
+        #Check points from 0 to n
+        for i in range(n):
+            for j in range(n):
+                #Skip neighbours and the same point
+                if j == (i + 1) % n or i == (j + 1) % n or i == j:
+                    continue
+                
+                #Normalize pair so (a,b) and (b,a) are treated as the same
+                pair = (min(i, j), max(i, j))
+                if pair in seen:
+                    continue
+                seen.add(pair)
+                
+                #Calculate distance
+                s = self.get2PointDistance(ch[i], ch[j])
+                print(f"Longest diagonal for {i} is {s} to {j}")
+                
+                #Calculate the angle from the x axis
+                sig = self.getAngleFromX(ch[i], ch[j])
+
+                #Update max distances and corresponding angles
+                s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
+                
+        if s1 + s2 == 0: return False
+        
+        #Calculate the weighted bisector
+        sig = (s1 * sig1 + s2 * sig2) / (s1 + s2)
+
+        #Rotate the building
+        building_rot = self.rotatePolygon(building, -sig)
+
+        #Build minimum bounding rectangle
+        mmb = self.minMaxBox(building_rot)
+
+        #Convert to polygon
+        minimal_polygon = self.QRectToQPolygon(mmb)
+
+        #Rotate back and return
+        return self.rotatePolygon(minimal_polygon, sig)
+        
     def getStatisticsSummary(self, polygons, log):
         """Summarizes the efectiveness of detection of the main direction of the building"""
 

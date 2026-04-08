@@ -92,6 +92,7 @@ class Ui_MainForm(object):
         iconWB.addPixmap(QtGui.QPixmap(f"{file_path}\icons\weightedbisector.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionWeighted_Isector.setIcon(iconWB)
         self.actionWeighted_Isector.setObjectName("actionWeighted_Isector")
+        self.actionWeighted_Isector.triggered.connect(self.simplifyWeightedBisectorClick)
         self.actionWall_Average = QtGui.QAction(parent=MainForm)
         iconWA = QtGui.QIcon()
         iconWA.addPixmap(QtGui.QPixmap(f"{file_path}\icons\wa.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -150,7 +151,7 @@ class Ui_MainForm(object):
         self.actionClear_Results.setText(_translate("MainForm", "Clear Results"))
         self.actionClear_All.setText(_translate("MainForm", "Clear All"))
         self.actionClear_All.setToolTip(_translate("MainForm", "Clear all data"))
-        self.actionWeighted_Isector.setText(_translate("MainForm", "Weighted Isector"))
+        self.actionWeighted_Isector.setText(_translate("MainForm", "Weighted Bisector"))
         self.actionWall_Average.setText(_translate("MainForm", "Wall Average"))
         self.actionLongest_Edge.setText(_translate("MainForm", "Longest Edge"))
         
@@ -235,6 +236,28 @@ class Ui_MainForm(object):
         self.finishClick()
 
     
+    def simplifyWeightedBisectorClick(self):
+        #Simplify building using Weighted Bisector method
+        pol = self.Canvas.getPolygon()
+        self.Canvas.clearResult()
+        
+        # does nothing if polygons do not exist
+        if pol[0].isEmpty():
+            self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}No polygon was inserted.")
+            return
+        
+        #Processes all polygons
+        for poly in pol:
+            #Simplify 
+            rec = self.Alg.simplifyBuildingWeightedBisector(poly)
+            if not rec:
+                self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}Couldn't simplify the given polygon.")
+                return
+            self.Canvas.appendResult(rec, poly)
+
+        self.finishClick()
+    
+
     def finishClick(self):
         self.Log.appendPlainText(f"\n{self.Canvas.getTimeStr()}Main edge detection SUMMARY:")
         self.Alg.getStatisticsSummary(self.Canvas.getPolygon(), self.Log)
