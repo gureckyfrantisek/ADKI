@@ -574,27 +574,22 @@ class Algorithms:
         # Base Cases
         if n <= 2:
             return False
-        k = 1
-
-        # Find the farthest vertex
-        # from ch[0] and ch[n-1] while the area gets larger
-        while self.crossProduct(ch[(k + 1) % n], ch[n - 1], ch[0]) > self.crossProduct(ch[k], ch[n - 1], ch[0]):
-            k += 1
 
         # Check points from 0 to k
-        for i in range(k + 1):
+        for i in range(n):
             j = (i + 1) % n
             while self.crossProduct(ch[(j + 1) % n], ch[i], ch[(i + 1) % n]) > self.crossProduct(ch[j], ch[i], ch[(i + 1) % n]):
                 j = (j + 1) % n
             
-            s = self.get2PointDistance(ch[i], ch[(j + 1) % n])
+            s = self.get2PointDistance(ch[i], ch[j])
             #Calculate the angle from the x axis
-            sig = self.get2LinesAngle(ch[i], ch[(j + 1) % n], QPointF(0, 0), QPointF(0, 1000))
+            sig = self.get2LinesAngle(ch[i], ch[j], QPointF(0, 0), QPointF(0, 1000))
 
             # Update max distances and corresponding angles
             print(s1, s2, sig1, sig2)
             s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
-
+            
+            print(s1, s2)
         if s1 + s2 == 0: return False
 
         #Calculate the weighted bisector
