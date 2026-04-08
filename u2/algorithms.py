@@ -40,6 +40,15 @@ class Algorithms:
 
         return acos(cos_phi)
     
+
+    def getAngleFromX(self, p1, p2):
+        ux = p2.x() - p1.x()
+        uy = p2.y() - p1.y()
+
+        #atan2 to return phi in (-π, π]
+        phi = atan2(uy, ux)
+        
+        return phi
     
     def get2PointDistance(self, p1, p2):
         #x, y distance
@@ -548,7 +557,6 @@ class Algorithms:
         return rot_mmb
     
     def updateMaxDiagonals(self, s1, s2, sig1, sig2, new_s, new_sig):
-        print('UPDATING')
         if new_s <= s2: return s1, s2, sig1, sig2
         
         if new_s > s1:
@@ -559,8 +567,6 @@ class Algorithms:
         
     def simplifyBuildingWeightedBisector(self, building: QPolygonF):
         """Simplifies the given building using the Weighted Bisector method"""
-        #Source: https://codeforces.com/blog/entry/133763
-        #and: https://www.geeksforgeeks.org/dsa/maximum-distance-between-two-points-in-coordinate-plane-using-rotating-calipers-method/
         #The longest bisectors use the convex hull points
         ch = self.createCHConvexHull(building)
 
@@ -570,28 +576,39 @@ class Algorithms:
         sig1 = 0
         sig2 = 0
 
-        #Use the rotating calipers to find the two longest bisections
-        # Base Cases
+        #We use brute force, since we need the two longest diagonals
+        #Base cases
         if n <= 2:
             return False
 
-        # Check points from 0 to k
+        #Use set to track which diagonals we checked
+        seen = set()
+        
+        #Check points from 0 to n
         for i in range(n):
-            j = (i + 1) % n
-            while self.crossProduct(ch[(j + 1) % n], ch[i], ch[(i + 1) % n]) > self.crossProduct(ch[j], ch[i], ch[(i + 1) % n]):
-                j = (j + 1) % n
-            
-            s = self.get2PointDistance(ch[i], ch[j])
-            #Calculate the angle from the x axis
-            sig = self.get2LinesAngle(ch[i], ch[j], QPointF(0, 0), QPointF(0, 1000))
+            for j in range(n):
+                #Skip neighbours and the same point
+                if j == (i + 1) % n or i == (j + 1) % n or i == j:
+                    continue
+                
+                #Normalize pair so (a,b) and (b,a) are treated as the same
+                pair = (min(i, j), max(i, j))
+                if pair in seen:
+                    continue
+                seen.add(pair)
+                
+                #Calculate distance
+                s = self.get2PointDistance(ch[i], ch[j])
+                print(f"Longest diagonal for {i} is {s} to {j}")
+                
+                #Calculate the angle from the x axis
+                sig = self.getAngleFromX(ch[i], ch[j])
 
-            # Update max distances and corresponding angles
-            print(s1, s2, sig1, sig2)
-            s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
-            
-            print(s1, s2)
+                #Update max distances and corresponding angles
+                s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
+                
         if s1 + s2 == 0: return False
-
+        
         #Calculate the weighted bisector
         sig = (s1 * sig1 + s2 * sig2) / (s1 + s2)
 
