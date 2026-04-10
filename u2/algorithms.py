@@ -442,13 +442,7 @@ class Algorithms:
 
         for i in range(n):
             #Calculates inner angle the line segment
-            omega = sigmas[i % n] - sigmas[(i - 1) % n]
-
-            #Normalize omega to be in the range (-pi, pi)
-            while omega <= -pi:
-                omega += 2 * pi
-            while omega > pi:
-                omega -= 2 * pi
+            omega = abs((sigmas[(i - 1) % n] + pi) % (2*pi) - sigmas[i % n])
 
             #remainder after division
             k = round(omega / (pi / 2))
