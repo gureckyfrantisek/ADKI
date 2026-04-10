@@ -170,7 +170,8 @@ class Ui_MainForm(object):
             convexHull = self.Alg.createCH(poly, method="convexHull")
             if not convexHull:
                 self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}Couldn't create convex hull for the given polygon.")
-                return
+                #Skip if failed to create convex hull
+                continue
             maer = self.Alg.createMAER(convexHull)
             res_maer = self.Alg.resizeRectangle(maer, poly)
             self.Canvas.appendResult(res_maer, poly)
@@ -252,7 +253,8 @@ class Ui_MainForm(object):
             rec = self.Alg.simplifyBuildingWeightedBisector(poly)
             if not rec:
                 self.Log.appendPlainText(f"{self.Canvas.getTimeStr()}Couldn't simplify the given polygon.")
-                return
+                #Skip the polygon if it failed
+                continue
             self.Canvas.appendResult(rec, poly)
 
         self.finishClick()

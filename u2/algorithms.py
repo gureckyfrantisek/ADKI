@@ -78,7 +78,6 @@ class Algorithms:
     def createCHConvexHull(self, pol: QPolygonF):
         """Creates Convex Hull of inserted polygon"""
         # Graham Scan (can add more methods later)
-        print("začátek CH")
 
         # ensure polygon is creatable
         if len(pol) <= 2:
@@ -248,7 +247,6 @@ class Algorithms:
         convexHull = QPolygonF()
         index = 0
 
-        print("Starting reconstruction")
         visited = set()
         while index not in visited:
             visited.add(index)
@@ -602,7 +600,6 @@ class Algorithms:
                 
                 #Calculate distance
                 s = self.get2PointDistance(ch[i], ch[j])
-                print(f"Longest diagonal for {i} is {s} to {j}")
                 
                 #Calculate the angle from the x axis
                 sig = self.getAngleFromX(ch[i], ch[j])
@@ -610,7 +607,8 @@ class Algorithms:
                 #Update max distances and corresponding angles
                 s1, s2, sig1, sig2 = self.updateMaxDiagonals(s1, s2, sig1, sig2, s, sig)
                 
-        if s1 + s2 == 0: return False
+        if s1 + s2 == 0:
+            return False
         
         #Calculate the weighted bisector
         sig = (s1 * sig1 + s2 * sig2) / (s1 + s2)
@@ -632,6 +630,7 @@ class Algorithms:
 
         #Polygon count in the dataset
         polygon_count = len(polygons)
+        skipped = 0
 
         #Counts of wrong detections (not squared deviations)
         numberWrongPolygonsDelta1 = 0
@@ -649,6 +648,11 @@ class Algorithms:
 
             #Extracts MBR
             mbr = poly.simplified_pol
+
+            #Skip if simplification failed
+            if not mbr:
+                skipped += 1
+                continue
 
             #Calculates sigma of MBR
             sigma = self.getMBRMainDirection(mbr)
@@ -675,9 +679,17 @@ class Algorithms:
                 k_i = 2*segment_sigma / pi
                 r_i = (k_i - floor(k_i)) * (pi/2)
 
+                #Calculate difference in valid range
+                diff = (r_i - r) % (pi/2)
+
+                #-pi and pi are next to each other, not 2pi apart
+                #After modulo only valid differences are -pi/4 and pi/4
+                if diff > pi/4:
+                    diff -= pi/2
+                
                 #Add the difference of the remainders to the sum of deltas
-                sum_delta1_r += (r_i - r)
-                sum_delta2_r += (r_i - r)**2
+                sum_delta1_r += diff
+                sum_delta2_r += diff**2
 
             #Polygon evaluation
             delta_sigma_1 = pi/(2*n) * sum_delta1_r
@@ -685,7 +697,7 @@ class Algorithms:
 
             #Sets classified to True, rewrites it to False if the detection is wrong
             poly.classified = True
-            if delta_sigma_1 > acceptanceThreshold:
+            if abs(delta_sigma_1) > acceptanceThreshold:
                 poly.classified = False
                 numberWrongPolygonsDelta1 += 1
 
@@ -694,8 +706,8 @@ class Algorithms:
                 numberWrongPolygonsDelta2 += 1
 
         #Logs the summary
-        wrong1 = (numberWrongPolygonsDelta1)/polygon_count * 100
-        wrong2 = (numberWrongPolygonsDelta2)/polygon_count * 100
+        wrong1 = (numberWrongPolygonsDelta1)/(polygon_count - skipped) * 100
+        wrong2 = (numberWrongPolygonsDelta2)/(polygon_count - skipped) * 100
         correct1 = 100 - wrong1
         correct2 = 100 - wrong2
 
