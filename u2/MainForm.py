@@ -231,7 +231,7 @@ class Ui_MainForm(object):
         #Processes all polygons
         for poly in pol:
             #Simplify 
-            rec = self.Alg.simplifyBuildingWallAverageAdam(poly)
+            rec = self.Alg.simplifyBuildingWallAverage(poly)
             self.Canvas.appendResult(rec, poly)
 
         self.finishClick()

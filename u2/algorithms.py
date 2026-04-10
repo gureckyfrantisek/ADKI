@@ -412,7 +412,7 @@ class Algorithms:
         return rot_mmb
 
 
-    def simplifyBuildingWallAverageAdam(self, building):
+    def simplifyBuildingWallAverage(self, building):
         #Simplify building using the Wall Average method    
 
         #number of points in the building polygon
@@ -507,50 +507,7 @@ class Algorithms:
         rot_mmb = self.rotatePolygon(res_mmb, sigma)
         
         return rot_mmb
-                
         
-    def simplifyBuildingWallAverageVitek(self,building):
-        # Simplify building using wall average method
-        
-        n = len(building)
-        sum_x = 0
-        sum_y = 0
-        
-        # Accumulate weighted sums of wall directions
-        for i in range(n):
-            p1=building[i]
-            p2=building[(i+1) % n]
-            
-            dx = p2.x() - p1.x()
-            dy = p2.y() - p1.y()
-            
-            length = self.get2PointDistance(p1, p2)
-            
-            if length == 0:
-                continue
-            
-            sigma = atan2(dy, dx)
-            
-            sum_x += cos(sigma) * length
-            sum_y += sin(sigma) * length
-            
-        # Compute average orientation
-        sigma_avg = atan2(sum_y, sum_x)
-        
-        # Rotate building to align average direction with x-axis
-        building_rot = self.rotatePolygon(building, -sigma_avg)
-        
-        # Compute axis-aligned bounding box
-        mmb = self.minMaxBox(building_rot)
-        
-        # Resize bounding box to fit the original building
-        res_mmb = self.resizeRectangle(mmb, building)
-        
-        # Rotate bounding box back to original orientation
-        rot_mmb = self.rotatePolygon(res_mmb, sigma_avg)
-        
-        return rot_mmb
-    
     def updateMaxDiagonals(self, s1, s2, sig1, sig2, new_s, new_sig):
         if new_s <= s2: return s1, s2, sig1, sig2
         
