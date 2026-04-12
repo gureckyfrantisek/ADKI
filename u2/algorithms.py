@@ -569,12 +569,12 @@ class Algorithms:
 
         #Build minimum bounding rectangle
         mmb = self.minMaxBox(building_rot)
-
-        #Convert to polygon
-        minimal_polygon = self.QRectToQPolygon(mmb)
+        
+        #Resize MMB
+        res_mmb = self.resizeRectangle(mmb, building)
 
         #Rotate back and return
-        return self.rotatePolygon(minimal_polygon, sig)
+        return self.rotatePolygon(res_mmb, sig)
         
     def getStatisticsSummary(self, polygons, log):
         """Summarizes the efectiveness of detection of the main direction of the building"""
