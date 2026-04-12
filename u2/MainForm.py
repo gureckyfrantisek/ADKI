@@ -81,6 +81,7 @@ class Ui_MainForm(object):
         iconClearResults.addPixmap(QtGui.QPixmap(f"{file_path}\icons\clear_ch.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionClear_Results.setIcon(iconClearResults)
         self.actionClear_Results.setObjectName("actionClear_Results")
+        self.actionClear_Results.triggered.connect(lambda: self.Canvas.clearResult(self.Log))
         self.actionClear_All = QtGui.QAction(parent=MainForm)
         iconClearAll = QtGui.QIcon()
         iconClearAll.addPixmap(QtGui.QPixmap(f"{file_path}\icons\clear_er.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)

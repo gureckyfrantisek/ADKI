@@ -283,14 +283,23 @@ class Draw(QWidget):
         self.__result.append(new_pol)
         original_pol.simplified_pol = rec
         
-    def clearResult(self):
+    def clearResult(self, log=None):
         """ Clears the result """
         self.__result = []
+
+        #Resets the simplified in every result polygon
+        for pol in self.__pol:
+            pol.classified = None
+            pol.simplified_pol = None
         
         #Repaints cleared screen
         self.__cache_dirty = True
         self.update()
 
+        #If log is passed, log results cleared
+        if log:
+            log.appendPlainText(f"{self.getTimeStr()}Results cleared.")
+        
     def clearSelection(self, log):
         """ Clears entire canvas """
         self.__pol = [Polygon()]
