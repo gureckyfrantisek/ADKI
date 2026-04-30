@@ -141,6 +141,9 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionExit)
         
         #Connects
+        self.actionExit.triggered.connect(lambda: sys.exit(app.exec()))
+        self.actionClear_results.triggered.connect(self.clearResultsClick)
+        self.actionClear_all.triggered.connect(self.clearAllClick)
         self.actionCreate_DT.triggered.connect(self.createDTClick)
         self.actionCreateContouLines.triggered.connect(self.createContourLinesClick)
         self.actionAnalyzeSlope.triggered.connect(self.analyzeSlopeClick)
@@ -153,6 +156,25 @@ class Ui_MainWindow(object):
         
 
     #User defined function
+    def clearResultsClick(self):
+        #Reset result variables
+        self.Canvas.resetDT()
+        self.Canvas.resetContours()
+        self.Canvas.resetTriangles()
+
+        #Repaint
+        self.Canvas.repaint()
+
+    def clearAllClick(self):
+        #Reset all variables
+        self.Canvas.resetPoints()
+        self.Canvas.resetDT()
+        self.Canvas.resetContours()
+        self.Canvas.resetTriangles()
+
+        #Repaint
+        self.Canvas.repaint()
+
     def createDTClick(self):
         #Create DT
         

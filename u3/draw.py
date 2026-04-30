@@ -163,3 +163,15 @@ class Draw(QWidget):
     def setViewContours(self, view):
         #Set view contours
         self.__view_Contours = view
+    
+    def resetPoints(self):
+        self.__points = []
+
+    def resetDT(self):
+        self.__DT = []
+
+    def resetContours(self):
+        self.__contours = []
+
+    def resetTriangles(self):
+        self.__triangles = []
