@@ -196,16 +196,11 @@ class Ui_MainWindow(object):
         
     def createContourLinesClick(self):
         #Create contour lines
-        DT = self.Canvas.getDT()
+        #Generate DT
+        self.createDTClick()
         
-        #We need to create DT
-        if len(DT) <3:
-            
-            #Generate DT
-            self.createDTClick()
-            
-            #Get DT
-            DT = self.Canvas.getDT()
+        #Get DT
+        DT = self.Canvas.getDT()
         
         #Input data
         z_min = 200
@@ -225,31 +220,20 @@ class Ui_MainWindow(object):
 
     def analyzeSlopeClick(self):
         #Analyze DTM slope
-        DT = self.Canvas.getDT()
+        #Generate DT
+        self.createDTClick()
         
-        #We need to create DT
-        if len(DT) <3:
-            
-            #Generate DT
-            self.createDTClick()
-            
-            #Get DT
-            DT = self.Canvas.getDT()
+        #Get DT
+        DT = self.Canvas.getDT()
         
         #Ceate new object
         a = Algorithms()
         
         #Convert to triangles
-        triangles = self.Canvas.getTriangles()
+        triangles = a.toTriangles(DT)
         
-        #Did we convert DTM to triangles
-        if len(triangles) == 0:
-            
-            #Convert DTM to triangles
-            triangles = a.toTriangles(DT)   
-            
-            #Set triangles
-            self.Canvas.setTriangles(triangles)
+        #Set triangles
+        self.Canvas.setTriangles(triangles)
              
         #Analyze slope
         a.analyzeDTMSlope(triangles)
