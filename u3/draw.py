@@ -2,6 +2,7 @@ from PyQt6.QtCore import *
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
 from qpoint3df import *
+from generate_data import *
 from random import *
 from math import *
 
@@ -9,7 +10,7 @@ class Draw(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.__points =[]
+        self.__points = generate_points(500)
         self.__DT = []
         self.__contours = []
         self.__triangles = []
@@ -18,11 +19,61 @@ class Draw(QWidget):
         self.__view_Aspect = True
         self.__view_Contours = True
         
+        self.__zoom = 1
+        self.__zoom_change = 0.75
+        self.__pan = [0, 0]
+        self.__pan_change = 50
+
+        #Capture key strokes
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+    
+    def wheelEvent(self, event):
+        #Handles mouse wheel inputs
+        delta = event.angleDelta().y()
+
+        #Stores mouse position
+        mouse_pos = event.position()  # QPointF
+        mx = mouse_pos.x()
+        my = mouse_pos.y()
+
+        old_zoom = self.__zoom
+
+        #Changes zoom level
+        if delta > 0:
+            if self.__zoom < 1000:
+                self.__zoom /= self.__zoom_change
+        else:
+            self.__zoom *= self.__zoom_change
+
+        #Canvas coordinates of mouse location
+        world_x = mx / old_zoom - self.__pan[0]
+        world_y = my / old_zoom - self.__pan[1]
+
+        #Pan change based on mouse location
+        self.__pan[0] = mx / self.__zoom - world_x
+        self.__pan[1] = my / self.__zoom - world_y
+
+        self.__cache_dirty = True
+        self.update()  # redraws surface
+
+        event.accept()
+    
+    def keyPressEvent(self, event: QKeyEvent):
+        if event.key() == Qt.Key.Key_Up:
+            self.__pan[1] += self.__pan_change / self.__zoom
+        elif event.key() == Qt.Key.Key_Down:
+            self.__pan[1] -= self.__pan_change / self.__zoom
+        elif event.key() == Qt.Key.Key_Left:
+            self.__pan[0] += self.__pan_change / self.__zoom
+        elif event.key() == Qt.Key.Key_Right:
+            self.__pan[0] -= self.__pan_change / self.__zoom
+        self.__cache_dirty = True
+        self.update()
         
     def mousePressEvent(self, e):
         #Get cursor coordinates 
-        x = e.position().x()
-        y = e.position().y()
+        x = e.position().x() / self.__zoom - self.__pan[0]
+        y = e.position().y() / self.__zoom - self.__pan[1]
         
         #Get random z
         z_min = 200
@@ -49,6 +100,12 @@ class Draw(QWidget):
         #Create new pen
         pen = QPen()
         
+        # Apply zoom/pan transform
+        transform = QTransform()
+        transform.scale(self.__zoom, self.__zoom)
+        transform.translate(self.__pan[0], self.__pan[1])
+        qp.setTransform(transform)
+
         #Draw slope
         if self.__view_Slope:
             #Set properties, triangles, slope
@@ -107,6 +164,56 @@ class Draw(QWidget):
         #End draw
         qp.end()
     
+    def zoomToData(self):
+        if not self.__points or len(self.__points) == 0:
+            return
+
+        #Find bounding box of all points
+        x_min = float('inf')
+        x_max = float('-inf')
+        y_min = float('inf')
+        y_max = float('-inf')
+
+        for point in self.__points:
+            x_min = min(x_min, point.x())
+            x_max = max(x_max, point.x())
+            y_min = min(y_min, point.y())
+            y_max = max(y_max, point.y())
+
+        data_width = x_max - x_min
+        data_height = y_max - y_min
+
+        if data_width == 0 or data_height == 0:
+            return
+
+        #Calculate zoom level to fit data in window with some padding
+        padding = 0.9
+        zoom_x = (self.width() * padding) / data_width
+        zoom_y = (self.height() * padding) / data_height
+        self.__zoom = min(zoom_x, zoom_y)
+
+        #Center the data in the window
+        self.__pan[0] = (self.width() / (2 * self.__zoom)) - (x_min + data_width / 2)
+        self.__pan[1] = (self.height() / (2 * self.__zoom)) - (y_min + data_height / 2)
+
+        self.__cache_dirty = True
+        self.update()
+    
+    def setPointsFromLas(self, las):
+        #Sets the points from a las object
+        xs = las.x
+        ys = las.y
+        zs = las.z
+
+        for x, y, z in zip(xs, ys, zs):
+            self.__points.append(QPoint3DF(float(x), float(y), float(z)))
+        
+        #Zoom to the data
+        self.zoomToData()
+
+        #Update the view
+        self.__cache_dirty = True
+        self.update()
         
     def getDT(self):
         return self.__DT

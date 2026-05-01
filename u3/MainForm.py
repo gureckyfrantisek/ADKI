@@ -7,6 +7,7 @@
 
 
 from PyQt6 import QtCore, QtGui, QtWidgets
+import laspy
 from draw import Draw
 from algorithms import * 
 
@@ -144,6 +145,7 @@ class Ui_MainWindow(object):
         self.actionExit.triggered.connect(lambda: sys.exit(app.exec()))
         self.actionClear_results.triggered.connect(self.clearResultsClick)
         self.actionClear_all.triggered.connect(self.clearAllClick)
+        self.actionOpen.triggered.connect(self.openClick)
         self.actionCreate_DT.triggered.connect(self.createDTClick)
         self.actionCreateContouLines.triggered.connect(self.createContourLinesClick)
         self.actionAnalyzeSlope.triggered.connect(self.analyzeSlopeClick)
@@ -174,6 +176,24 @@ class Ui_MainWindow(object):
 
         #Repaint
         self.Canvas.repaint()
+
+    def openClick(self):
+        #First we get the file
+        file = self.getFile()
+
+        #If no file was selected or it is not a .laz or .las, return
+        if (not file) or (file.split(".")[-1] not in ("laz", "las")):
+            return
+        
+        #Clear all before importing
+        self.clearAllClick()
+
+        #Then we read it
+        las = laspy.read(file)
+
+        #Convert to our data structure and save it
+        self.Canvas.setPointsFromLas(las)
+    
 
     def createDTClick(self):
         #Create DT
@@ -288,6 +308,10 @@ class Ui_MainWindow(object):
         #Repaint
         self.Canvas.repaint()      
 
+    #Helpers
+    def getFile(self):
+        file, _ = QFileDialog.getOpenFileName(self.Canvas, "Open File", "", "LAZ (*.laz);;All Files (*)")
+        return file
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
