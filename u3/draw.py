@@ -156,10 +156,12 @@ class Draw(QWidget):
         #Set properties, points
         pen.setWidth(15)
         pen.setColor(Qt.GlobalColor.black)
-        qp.setPen(pen)
+        qp.setPen(Qt.GlobalColor.black)   # border color
+        qp.setBrush(Qt.GlobalColor.black)   # fill color
    
-        #Draw points
-        qp.drawPoints(self.__points)
+        #Draw points as circles that change size with zoom
+        for point in self.__points:
+            qp.drawEllipse(point, 3/self.__zoom, 3/self.__zoom)
         
         #End draw
         qp.end()
