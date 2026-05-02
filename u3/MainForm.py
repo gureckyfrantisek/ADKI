@@ -218,18 +218,21 @@ class Ui_MainWindow(object):
         #Create contour lines
         #Generate DT
         self.createDTClick()
+
+        #initial dz min-max count
+        dz_count = 15
         
         #Get DT
         DT = self.Canvas.getDT()
-        
-        #Input data
-        z_min = 200
-        z_max = 600
-        dz = 20
 
         #Create contour lines
         a = Algorithms()
-        contours = a.createContourLines(DT,z_min,z_max, dz)
+
+        #Input data
+        z_min, z_max = a.getMinMaxZ(DT)
+        dz = int((z_max - z_min) / dz_count)
+
+        contours = a.createContourLines(DT,int(z_min)-dz,int(z_max)+dz, dz)
 
         #Set results
         self.Canvas.setContours(contours)
