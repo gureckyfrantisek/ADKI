@@ -289,3 +289,25 @@ class Algorithms:
             
             #Set slope
             t.setSlope(slope)
+
+    
+    def getMinMaxZ(self, DT):
+        #Returns minimum and maximum Z value in DT
+
+        #Assing initial values
+        z_min = inf
+        z_max = -inf
+
+        #Process all points in DT
+        for edge in DT:
+
+            #Get Z value of line start point
+            z = edge.getStart().z()
+
+            #Update minimum and maximum
+            if z < z_min:
+                z_min = z
+            if z > z_max:
+                z_max = z
+
+        return z_min, z_max
