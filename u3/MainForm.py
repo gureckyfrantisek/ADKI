@@ -230,7 +230,7 @@ class Ui_MainWindow(object):
 
         #Input data
         z_min, z_max = a.getMinMaxZ(DT)
-        dz = int((z_max - z_min) / dz_count)
+        dz = max(1, int((z_max - z_min) / dz_count))
 
         contours = a.createContourLines(DT,int(z_min)-dz,int(z_max)+dz, dz)
 
