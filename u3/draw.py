@@ -106,24 +106,32 @@ class Draw(QWidget):
         transform.translate(self.__pan[0], self.__pan[1])
         qp.setTransform(transform)
 
-        #Draw slope
-        if self.__view_Slope:
-            #Set properties, triangles, slope
+        #Draw slope or aspect, not both
+        if self.__view_Slope or self.__view_Aspect:
             pen.setColor(Qt.GlobalColor.black)
             qp.setPen(pen)
 
             #Process all triangles
             for triangle in self.__triangles:
-                
-                #Get slope
-                slope = triangle.getSlope()
+                if self.__view_Slope:
+                    #Get slope
+                    slope = triangle.getSlope()
 
-                #Rescale aspect to 0-255
-                k = (2*255) / pi
-                gray = int(255 - (slope * k))
+                    #Rescale slope to 0-255
+                    k = (2 * 255) / pi
+                    gray = max(0, min(255, int(255 - (slope * k))))
 
-                #Create Qt Color
-                color = QColor(gray, gray, gray)
+                    #Create Qt Color
+                    color = QColor(gray, gray, gray)
+                else:
+                    #Get aspect
+                    aspect = triangle.getAspect()
+
+                    #Rescale aspect to 0-1
+                    aspect_normed = aspect / (2 * pi)
+                    
+                    #Create Qt Color
+                    color = QColor.fromHsvF(aspect_normed, 1, 1)
 
                 #Assign brush color
                 qp.setBrush(color)

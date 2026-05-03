@@ -149,6 +149,7 @@ class Ui_MainWindow(object):
         self.actionCreate_DT.triggered.connect(self.createDTClick)
         self.actionCreateContouLines.triggered.connect(self.createContourLinesClick)
         self.actionAnalyzeSlope.triggered.connect(self.analyzeSlopeClick)
+        self.actionAnalyzeExposition.triggered.connect(self.analyzeAspectClick)
         self.actionDT.triggered.connect(self.viewDTClick)
         self.actionContour_lines_2.triggered.connect(self.viewContoursClick)
         self.actionSlope.triggered.connect(self.viewSlopeClick)
@@ -264,9 +265,48 @@ class Ui_MainWindow(object):
         #Set results
         self.Canvas.setTriangles(triangles)
         
+        #Toggle off aspect and view slope
+        self.Canvas.setViewAspect(False)
+        self.Canvas.setViewSlope(True)
+
+        #Update checks
+        self.actionExposition.setChecked(False)
+        self.actionSlope.setChecked(True)
+
         #Repaint
         self.Canvas.repaint()
         
+
+    def analyzeAspectClick(self):
+        #Analyze DTM aspect
+        #Generate DT
+        self.createDTClick()
+        
+        #Get DT
+        DT = self.Canvas.getDT()
+        
+        #Ceate new object
+        a = Algorithms()
+        
+        #Convert to triangles
+        triangles = a.toTriangles(DT)
+             
+        #Analyze aspect
+        a.analyzeDTMAspect(triangles)
+        
+        #Set results
+        self.Canvas.setTriangles(triangles)
+        
+        #Toggle off slope and view aspect
+        self.Canvas.setViewSlope(False)
+        self.Canvas.setViewAspect(True)
+
+        #Update checks
+        self.actionSlope.setChecked(False)
+        self.actionExposition.setChecked(True)
+
+        #Repaint
+        self.Canvas.repaint()
         
     def viewDTClick(self):
         #Is menu item checked
