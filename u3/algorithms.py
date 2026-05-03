@@ -289,3 +289,38 @@ class Algorithms:
             
             #Set slope
             t.setSlope(slope)
+    
+    def getAspect(self, p1:QPoint3DF, p2:QPoint3DF, p3:QPoint3DF):
+        #Compute triangle aspect
+        ux, uy, uz = p3.x() - p2.x(), p3.y() - p2.y(), p3.z() - p2.z()
+        vx, vy, vz = p1.x() - p2.x(), p1.y() - p2.y(), p1.z() - p2.z()
+        
+        #Normal vector - vector cross product
+        nx = uy*vz - uz*vy
+        ny = -(ux*vz - uz*vx)
+        nz = ux*vy - uy*vx
+        
+        #The vector should point outwards
+        if nz < 0:
+            nx = -nx
+            ny = -ny
+            nz = -nz
+        
+        #Azimuth is the arctan of nx and ny
+        azimuth = atan2(nx, ny)
+
+        #Return in <0, 2pi>
+        if azimuth <= 0:
+            azimuth += 2*pi
+        
+        return azimuth
+    
+    def analyzeDTMAspect(self, triangles):
+        #Compute aspect for DTM
+        for t in triangles:
+
+            #Compute aspect
+            aspect = self.getAspect(t.getP1(), t.getP2(), t.getP3())
+            
+            #Set aspect
+            t.setAspect(aspect)
