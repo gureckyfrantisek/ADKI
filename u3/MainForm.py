@@ -262,6 +262,14 @@ class Ui_MainWindow(object):
         #Set results
         self.Canvas.setTriangles(triangles)
         
+        #Toggle off aspect and view slope
+        self.Canvas.setViewAspect(False)
+        self.Canvas.setViewSlope(True)
+
+        #Update checks
+        self.actionExposition.setChecked(False)
+        self.actionSlope.setChecked(True)
+
         #Repaint
         self.Canvas.repaint()
         
@@ -286,6 +294,14 @@ class Ui_MainWindow(object):
         #Set results
         self.Canvas.setTriangles(triangles)
         
+        #Toggle off slope and view aspect
+        self.Canvas.setViewSlope(False)
+        self.Canvas.setViewAspect(True)
+
+        #Update checks
+        self.actionSlope.setChecked(False)
+        self.actionExposition.setChecked(True)
+
         #Repaint
         self.Canvas.repaint()
         
