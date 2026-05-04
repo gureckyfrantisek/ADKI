@@ -469,6 +469,8 @@ class Draw(QWidget):
 
     def resetContours(self):
         self.__contours = []
+        self.__countor_lines = []
+        self.__contour_annotations = []
 
     def resetTriangles(self):
         self.__triangles = []
