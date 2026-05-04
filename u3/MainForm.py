@@ -10,6 +10,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 import laspy
 from draw import Draw
 from algorithms import * 
+import time
 
 
 class Ui_MainWindow(object):
@@ -234,6 +235,12 @@ class Ui_MainWindow(object):
         dz = max(1, int((z_max - z_min) / dz_count))
 
         contours = a.createContourLines(DT,int(z_min)-dz,int(z_max)+dz, dz)
+
+        cas = time.time()
+        print(cas)
+        contour_lines = a.connect_contours(contours)
+        self.Canvas.setContourLines(contour_lines)
+        print(time.time() - cas)
 
         #Set results
         self.Canvas.setContours(contours)

@@ -13,6 +13,7 @@ class Draw(QWidget):
         self.__points = generate_points(500)
         self.__DT = []
         self.__contours = []
+        self.__countor_lines = []
         self.__triangles = []
         self.__view_DT = True
         self.__view_Slope = True
@@ -158,8 +159,11 @@ class Draw(QWidget):
             qp.setPen(pen)
             
             #Draw contour lines
-            for c in self.__contours:
-                qp.drawLine(c.getStart(), c.getEnd())
+            for line in self.__countor_lines:
+                pen.setColor(QColor(85, int(line[0].z()), int(line[0].z()))) #Chocolate brown color
+                qp.setPen(pen)
+                for c in line:
+                    qp.drawLine(c.getStart(), c.getEnd())
             
         #Set properties, points
         pen.setWidth(15)
@@ -260,6 +264,11 @@ class Draw(QWidget):
     def setTriangles(self, triangles):
         #Set triangles
         self.__triangles = triangles
+
+
+    def setContourLines(self, contour_lines):
+        #Set contour lines
+        self.__countor_lines = contour_lines
     
     
     def setViewDT(self, view):
