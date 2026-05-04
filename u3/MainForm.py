@@ -10,13 +10,16 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 import laspy
 from draw import Draw
 from algorithms import * 
-import time
+import os
 
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1111, 1015)
+        #Relative path to icons
+        file_path = os.path.abspath(os.path.dirname(__file__)) # gets the path to working directory
+
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
@@ -47,32 +50,32 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.ToolBarArea.TopToolBarArea, self.toolBar)
         self.actionOpen = QtGui.QAction(parent=MainWindow)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap("icons/open_file.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon.addPixmap(QtGui.QPixmap(f"{file_path}/icons/open_file.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionOpen.setIcon(icon)
         self.actionOpen.setObjectName("actionOpen")
         self.actionExit = QtGui.QAction(parent=MainWindow)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap("icons/exit.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon1.addPixmap(QtGui.QPixmap(f"{file_path}/icons/exit.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionExit.setIcon(icon1)
         self.actionExit.setObjectName("actionExit")
         self.actionCreate_DT = QtGui.QAction(parent=MainWindow)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap("icons/triangles2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon2.addPixmap(QtGui.QPixmap(f"{file_path}/icons/triangles2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionCreate_DT.setIcon(icon2)
         self.actionCreate_DT.setObjectName("actionCreate_DT")
         self.actionCreateContouLines = QtGui.QAction(parent=MainWindow)
         icon3 = QtGui.QIcon()
-        icon3.addPixmap(QtGui.QPixmap("icons/contours2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon3.addPixmap(QtGui.QPixmap(f"{file_path}/icons/contours2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionCreateContouLines.setIcon(icon3)
         self.actionCreateContouLines.setObjectName("actionCreateContouLines")
         self.actionAnalyzeSlope = QtGui.QAction(parent=MainWindow)
         icon4 = QtGui.QIcon()
-        icon4.addPixmap(QtGui.QPixmap("icons/slope2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon4.addPixmap(QtGui.QPixmap(f"{file_path}/icons/slope2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionAnalyzeSlope.setIcon(icon4)
         self.actionAnalyzeSlope.setObjectName("actionAnalyzeSlope")
         self.actionAnalyzeExposition = QtGui.QAction(parent=MainWindow)
         icon5 = QtGui.QIcon()
-        icon5.addPixmap(QtGui.QPixmap("icons/orientation2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon5.addPixmap(QtGui.QPixmap(f"{file_path}/icons/orientation2.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionAnalyzeExposition.setIcon(icon5)
         self.actionAnalyzeExposition.setObjectName("actionAnalyzeExposition")
         self.actionDT = QtGui.QAction(parent=MainWindow)
@@ -93,17 +96,17 @@ class Ui_MainWindow(object):
         self.actionExposition.setObjectName("actionExposition")
         self.actionClear_results = QtGui.QAction(parent=MainWindow)
         icon6 = QtGui.QIcon()
-        icon6.addPixmap(QtGui.QPixmap("icons/clear.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon6.addPixmap(QtGui.QPixmap(f"{file_path}/icons/clear.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionClear_results.setIcon(icon6)
         self.actionClear_results.setObjectName("actionClear_results")
         self.actionClear_all = QtGui.QAction(parent=MainWindow)
         icon7 = QtGui.QIcon()
-        icon7.addPixmap(QtGui.QPixmap("icons/clear_all.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon7.addPixmap(QtGui.QPixmap(f"{file_path}/icons/clear_all.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionClear_all.setIcon(icon7)
         self.actionClear_all.setObjectName("actionClear_all")
         self.actionParameters = QtGui.QAction(parent=MainWindow)
         icon8 = QtGui.QIcon()
-        icon8.addPixmap(QtGui.QPixmap("icons/settings.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        icon8.addPixmap(QtGui.QPixmap(f"{file_path}/icons/settings.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionParameters.setIcon(icon8)
         self.actionParameters.setObjectName("actionParameters")
         self.menuFile.addAction(self.actionOpen)
