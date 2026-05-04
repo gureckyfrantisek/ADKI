@@ -8,14 +8,14 @@ def generate_points(n):
 
     #Coordinate ranges
     x_min = 0
-    x_max = 800
+    x_max = 1200
     y_min = 0
-    y_max = 600
-    z_initial = 100
-    z_min_rand = -10
-    z_max_rand = 10
-    z_flip_chance = 0.01
-    neighbour_distance_tolerance = 10
+    y_max = 800
+    z_initial = 200
+    z_min_rand = -6
+    z_max_rand = 6
+    z_flip_chance = 0.015
+    neighbour_distance_tolerance = 7
     
     xy_points = []
 
@@ -29,7 +29,7 @@ def generate_points(n):
     xy_points.sort(key=lambda p: (p[0] + p[1]))
 
     #Generate z coordinates
-    z_growing_constant = 1
+    z_growing_constant = 0.2
 
     pre_xy_sum = xy_points[0][0] + xy_points[0][1]
     for x, y in xy_points:
