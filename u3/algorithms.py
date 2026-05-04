@@ -5,6 +5,8 @@ from qpoint3df import *
 from math import *
 from edge import *
 from triangle import *
+from contour import *
+from collections import defaultdict
 
 class Algorithms:
     
@@ -237,7 +239,7 @@ class Algorithms:
         a = self.getContourPoint(p1, p2, z)
         b = self.getContourPoint(p2, p3, z)
 
-        contour_lines.append(Edge(a, b))
+        contour_lines.append(Contour(a, b, z))
 
     
     def getSlope(self, p1:QPoint3DF, p2:QPoint3DF, p3:QPoint3DF):
@@ -347,3 +349,128 @@ class Algorithms:
             
             #Set aspect
             t.setAspect(aspect)
+
+
+    def connect_contours(self, contours, tol=1e-3):
+        #Connect contour segments into continuous lines
+
+        #Helper function to round points to a grid of tolarance
+        def key(p):
+            return (round(p.x() / tol), round(p.y() / tol))
+
+        contours_by_z = defaultdict(list)
+        for line in contours:
+            contours_by_z[line.z()].append(line)
+
+        contour_lines = []
+
+        #Go through each contour level
+        for z, lines in contours_by_z.items():
+
+            used = set()
+            point_map = defaultdict(list)
+
+            # Build undirected map
+            for line in lines:
+                s = key(line.getStart())
+                e = key(line.getEnd())
+                point_map[s].append(line)
+                point_map[e].append(line)
+
+            #DFS to find connected components
+            for line in lines:
+                if line in used:
+                    continue
+
+                chain = []
+                stack = [line]
+
+                while stack:
+                    current = stack.pop()
+                    if current in used:
+                        continue
+
+                    used.add(current)
+                    chain.append(current)
+
+                    s = key(current.getStart())
+                    e = key(current.getEnd())
+
+                    for pt in (s, e):
+                        for neighbor in point_map[pt]:
+                            if neighbor not in used:
+                                stack.append(neighbor)
+
+                contour_lines.append(chain)
+
+        return contour_lines
+    
+
+    def createContourAnnotations(self, contour_lines, min_z = 0, max_z = 0, dz= 0):
+        #Create contour annotation
+        contour_annotations = [] # list of tuples (x, y, z, rotation)
+
+        #Go through contour lines 
+        for contour in contour_lines:
+            #Create subcontours to have more annotations on long contour lines
+            n = len(contour)
+            count_of_subsegments = n//20 + 1
+            sub_contours = [contour[i:i + count_of_subsegments] for i in range(0, n, n//count_of_subsegments)]
+
+            #Go through subcontours and create annotation for each of them
+            for sub_contour in sub_contours:
+
+                #Skip short subcontours to avoid cluttering
+                if len(sub_contour) <= 1:
+                    continue
+
+                z = sub_contour[0].z()
+                max_distance = 0
+                text_x = 0
+                text_y = 0
+                rotation = 0
+                #Find the longest segment in the subcontour to place annotation there
+                for segment in sub_contour:
+                    sx = segment.getStart().x()
+                    sy = segment.getStart().y()
+                    ex = segment.getEnd().x()
+                    ey = segment.getEnd().y()
+                    distance = sqrt((ex - sx)**2 + (ey - sy)**2)
+                    if distance > max_distance:
+
+                        #Calculate annotation position and rotation
+                        max_distance = distance
+                        text_x = (sx + ex) / 2
+                        text_y = (sy + ey)/2
+                        rotation = atan2(ey - sy, ex - sx)
+
+                        #Rotate annotation to head upwards
+                        if rotation < -pi/2:
+                            rotation += pi
+                        elif rotation > pi/2:
+                            rotation -= pi
+
+                if max_distance > 10:  # Only add annotation if the contour line is long enough
+                    contour_annotations.append((text_x, text_y, z, rotation))  
+
+        # Filter out vertical annotations and overlapping annotations
+        filtered_contour_annotations = []
+        used_positions = set()
+        for x, y, z, rotation in contour_annotations:
+            # Filter out vertical annotations
+            if pi/2 -0.1 < rotation or rotation < -pi/2 + 0.1:
+                continue
+            # Filter out overlapping annotations
+            if self.checkIfAnnotationIsClose(used_positions, x, y):
+                continue
+            used_positions.add((x, y))
+            filtered_contour_annotations.append((x, y, z, rotation))
+
+        return filtered_contour_annotations
+    
+
+    def checkIfAnnotationIsClose(self, used_positions, x, y):
+        # Check if the annotation is too close to existing annotations
+        for position in used_positions:
+            if sqrt((x - position[0])**2 + (y - position[1])**2) < 20:  # If too close to an existing annotation
+                return True
