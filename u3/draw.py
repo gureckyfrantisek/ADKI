@@ -13,6 +13,8 @@ class Draw(QWidget):
         self.__points = generate_points(500)
         self.__DT = []
         self.__contours = []
+        self.__countor_lines = []
+        self.__contour_annotations = []
         self.__triangles = []
         self.__view_DT = True
         self.__view_Slope = True
@@ -226,15 +228,44 @@ class Draw(QWidget):
 
         #Draw contour lines
         if self.__view_Contours:        
-            #Set properties, contours
-            pen.setColor(QColor(85, 38, 0)) #Chocolate brown color
-            qp.setPen(pen)
-            
+    
             #Draw contour lines
-            for c in self.__contours:
-                p1 = self.transform_point(c.getStart())
-                p2 = self.transform_point(c.getEnd())
-                qp.drawLine(p1, p2)
+            for line in self.__countor_lines:
+
+                #Set properties, contours
+                if line[0].z() % 5 == 0:
+                    pen.setColor(QColor(85, 38, 0))
+                    pen.setWidth(3)
+                else: 
+                    pen.setColor(QColor(85, 38, 0).lighter(150))
+                    pen.setWidth(2)
+                qp.setPen(pen)
+
+                #Draw lines
+                for c in line:
+                    p1 = self.transform_point(c.getStart())
+                    p2 = self.transform_point(c.getEnd())
+                    qp.drawLine(p1, p2)
+
+        # Draw contour annotations
+        pen.setColor(QColor(85, 38, 0))
+        pen.setWidth(1)
+        qp.setPen(pen)
+
+        for x, y, text, rotation in self.__contour_annotations:
+            qp.save()
+            #Set properties, contour annotations
+            if text % 5 == 0:
+                pen.setColor(QColor(85, 38, 0))
+            else: 
+                pen.setColor(QColor(85, 38, 0).lighter(150))
+            qp.setPen(pen)
+            qp.translate(x, y)
+            qp.rotate(rotation*180/pi)  # Rotate text to align with contour line
+
+            qp.drawText(0, 0, str(text))
+
+            qp.restore()
             
         #Set properties, points
         pen.setWidth(15)
@@ -399,6 +430,16 @@ class Draw(QWidget):
     def setTriangles(self, triangles):
         #Set triangles
         self.__triangles = triangles
+
+
+    def setContourLines(self, contour_lines):
+        #Set contour lines
+        self.__countor_lines = contour_lines
+
+
+    def setContourAnnotations(self, contour_annotations):
+        #Set contour annotations
+        self.__contour_annotations = contour_annotations
     
     
     def setViewDT(self, view):
