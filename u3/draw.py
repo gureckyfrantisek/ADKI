@@ -13,7 +13,7 @@ class Draw(QWidget):
         self.__points = generate_points(500)
         self.__DT = []
         self.__contours = []
-        self.__countor_lines = []
+        self.__contour_lines = []
         self.__contour_annotations = []
         self.__triangles = []
         self.__view_DT = True
@@ -230,7 +230,7 @@ class Draw(QWidget):
         if self.__view_Contours:        
     
             #Draw contour lines
-            for line in self.__countor_lines:
+            for line in self.__contour_lines:
 
                 #Set properties, contours
                 if line[0].z() % 5 == 0:
@@ -476,7 +476,7 @@ class Draw(QWidget):
 
     def setContourLines(self, contour_lines):
         #Set contour lines
-        self.__countor_lines = contour_lines
+        self.__contour_lines = contour_lines
 
 
     def setContourAnnotations(self, contour_annotations):
@@ -510,7 +510,8 @@ class Draw(QWidget):
         self.__DT = []
 
     def resetContours(self):
-        self.__contours = []
+        self.__contour_lines = []
+        self.__contour_annotations = []
 
     def resetTriangles(self):
         self.__triangles = []
