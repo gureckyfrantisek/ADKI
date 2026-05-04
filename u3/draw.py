@@ -88,8 +88,8 @@ class Draw(QWidget):
         elif event.key() == Qt.Key.Key_Right:
             self.__pan[0] -= self.__pan_change / self.__zoom
         elif event.key() == Qt.Key.Key_R:
-            self.__rot_x = 0
-            self.__rot_y = 0
+            self.resetRotation()
+            
         self.__cache_dirty = True
         self.update()
         
@@ -252,7 +252,7 @@ class Draw(QWidget):
         pen.setWidth(1)
         qp.setPen(pen)
 
-        for x, y, text, rotation in self.__contour_annotations:
+        for start, end, x, y, text, rotation in self.__contour_annotations:
             qp.save()
             #Set properties, contour annotations
             if text % 5 == 0:
@@ -260,8 +260,26 @@ class Draw(QWidget):
             else: 
                 pen.setColor(QColor(85, 38, 0).lighter(150))
             qp.setPen(pen)
-            qp.translate(x, y)
-            qp.rotate(rotation*180/pi)  # Rotate text to align with contour line
+           # Get two points of the contour segment (you must store them!)
+            p1 = self.transform_point(start)
+            p2 = self.transform_point(end)
+
+            # Compute angle in screen space
+            dx = p2.x() - p1.x()
+            dy = p2.y() - p1.y()
+            angle = atan2(dy, dx)
+
+            # Ensure text is heading upwards
+            if angle < -pi/2:
+                angle += pi
+            elif angle > pi/2:
+                angle -= pi
+
+            # Position text (you already have x, y)
+            t_x, t_y = self.transform_text(x, y, int(text) - 5)
+
+            qp.translate(t_x, t_y)
+            qp.rotate(degrees(angle))
 
             qp.drawText(0, 0, str(text))
 
@@ -308,10 +326,12 @@ class Draw(QWidget):
         zoom_x = (self.width() * padding) / data_width
         zoom_y = (self.height() * padding) / data_height
         self.__zoom = min(zoom_x, zoom_y)
+        print("Zoom:", self.__zoom)
 
         #Center the data in the window
         self.__pan[0] = (self.width() / (2 * self.__zoom)) - (x_min + data_width / 2)
         self.__pan[1] = (self.height() / (2 * self.__zoom)) - (y_min + data_height / 2)
+        print("Pan:", self.__pan)
 
         self.__cache_dirty = True
         self.update()
@@ -354,6 +374,25 @@ class Draw(QWidget):
 
         return QPointF(x, y)
     
+    def transform_text(self, x, y, z):
+        #Centering
+        cx, cy, cz = self.get_center()
+        x -= cx
+        y -= cy
+        z -= cz
+
+        #Rotation
+        x, y, z = self.rotate_point(x, y, z, self.__rot_x, self.__rot_y)
+
+        #Projection of the point
+        x, y = self.project_point(x, y, z)
+
+        #Adjust with pan and zoom
+        x = x * self.__zoom + self.width() / 2 + self.__pan[0]
+        y = y * self.__zoom + self.height() / 2 + self.__pan[1]
+
+        return x, y
+    
     def depth(self, tri):
         #Calculates the triangle depth for drawing
         z1 = self.rotate_point(tri.getP1().x(), tri.getP1().y(), tri.getP1().z(), self.__rot_x, self.__rot_y)[2]
@@ -388,6 +427,9 @@ class Draw(QWidget):
         for x, y, z in zip(xs, ys, zs):
             self.__points.append(QPoint3DF(float(x), float(y), float(z)))
         
+        #Reset rotation
+        self.resetRotation()
+
         #Zoom to the data
         self.zoomToData()
 
@@ -472,3 +514,7 @@ class Draw(QWidget):
 
     def resetTriangles(self):
         self.__triangles = []
+
+    def resetRotation(self):
+        self.__rot_x = 0
+        self.__rot_y = 0

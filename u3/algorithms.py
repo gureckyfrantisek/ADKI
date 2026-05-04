@@ -429,6 +429,7 @@ class Algorithms:
                 text_x = 0
                 text_y = 0
                 rotation = 0
+                
                 #Find the longest segment in the subcontour to place annotation there
                 for segment in sub_contour:
                     sx = segment.getStart().x()
@@ -443,7 +444,8 @@ class Algorithms:
                         text_x = (sx + ex) / 2
                         text_y = (sy + ey)/2
                         rotation = atan2(ey - sy, ex - sx)
-
+                        start_segment = segment.getStart()
+                        end_segment = segment.getEnd()
                         #Rotate annotation to head upwards
                         if rotation < -pi/2:
                             rotation += pi
@@ -451,20 +453,20 @@ class Algorithms:
                             rotation -= pi
 
                 if max_distance > 10:  # Only add annotation if the contour line is long enough
-                    contour_annotations.append((text_x, text_y, z, rotation))  
+                    contour_annotations.append((start_segment, end_segment, text_x, text_y, z, rotation))  
 
         # Filter out vertical annotations and overlapping annotations
         filtered_contour_annotations = []
-        used_positions = set()
-        for x, y, z, rotation in contour_annotations:
+        used_positions = []
+        for start_segment, end_segment, x, y, z, rotation in contour_annotations:
             # Filter out vertical annotations
             if pi/2 -0.1 < rotation or rotation < -pi/2 + 0.1:
                 continue
             # Filter out overlapping annotations
             if self.checkIfAnnotationIsClose(used_positions, x, y):
                 continue
-            used_positions.add((x, y))
-            filtered_contour_annotations.append((x, y, z, rotation))
+            used_positions.append((x, y))
+            filtered_contour_annotations.append((start_segment, end_segment, x, y, z, rotation))
 
         return filtered_contour_annotations
     
