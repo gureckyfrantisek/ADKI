@@ -24,6 +24,11 @@ class Draw(QWidget):
         self.__pan = [0, 0]
         self.__pan_change = 50
 
+        self.__rotating = False
+        self.__rot_x = 0
+        self.__rot_y = 0
+        self.__last_mouse_pos = None
+
         #Capture key strokes
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
     
@@ -40,22 +45,27 @@ class Draw(QWidget):
 
         #Changes zoom level
         if delta > 0:
-            if self.__zoom < 1000:
-                self.__zoom /= self.__zoom_change
+            factor = 1 / self.__zoom_change
         else:
-            self.__zoom *= self.__zoom_change
+            factor = self.__zoom_change
 
-        #Canvas coordinates of mouse location
-        world_x = mx / old_zoom - self.__pan[0]
-        world_y = my / old_zoom - self.__pan[1]
+        new_zoom = self.__zoom * factor
 
-        #Pan change based on mouse location
-        self.__pan[0] = mx / self.__zoom - world_x
-        self.__pan[1] = my / self.__zoom - world_y
+        #Clamp zoom
+        new_zoom = max(0.1, min(100, new_zoom))
 
-        self.__cache_dirty = True
-        self.update()  # redraws surface
+        #Compute zoom ratio
+        ratio = new_zoom / old_zoom
 
+        #Adjust pan so cursor stays fixed
+        self.__pan[0] = mx - ratio * (mx - self.__pan[0])
+        self.__pan[1] = my - ratio * (my - self.__pan[1])
+
+        #Apply zoom
+        self.__zoom = new_zoom
+
+        #Update view
+        self.update()
         event.accept()
     
     def keyPressEvent(self, event: QKeyEvent):
@@ -67,14 +77,40 @@ class Draw(QWidget):
             self.__pan[0] += self.__pan_change / self.__zoom
         elif event.key() == Qt.Key.Key_Right:
             self.__pan[0] -= self.__pan_change / self.__zoom
+        elif event.key() == Qt.Key.Key_R:
+            self.__rot_x = 0
+            self.__rot_y = 0
         self.__cache_dirty = True
         self.update()
         
     def mousePressEvent(self, e):
-        #Get cursor coordinates 
-        x = e.position().x() / self.__zoom - self.__pan[0]
-        y = e.position().y() / self.__zoom - self.__pan[1]
+        #If where holding Ctrl, do not add points but rotate
+        if e.modifiers() & Qt.KeyboardModifier.ControlModifier:
+            self.__rotating = True
+            self.__last_mouse_pos = e.position()
+            return
         
+        #Screen coords
+        mx = e.position().x()
+        my = e.position().y()
+
+        #Undo pan + zoom + screen center
+        x = (mx - self.width()/2 - self.__pan[0]) / self.__zoom
+        y = (my - self.height()/2 - self.__pan[1]) / self.__zoom
+
+        #Approximate inverse projection
+        #Undo projection offset
+        _, _, cz = self.get_center()
+        z = cz
+
+        #Undo rotation (inverse rotation = -angles)
+        x, y, z = self.rotate_point(x, y, z, -self.__rot_x, -self.__rot_y)
+
+        #Undo centering
+        cx, cy, cz = self.get_center()
+        x += cx
+        y += cy
+
         #Get random z
         z_min = 200
         z_max = 600
@@ -89,13 +125,34 @@ class Draw(QWidget):
         #Repaint
         self.repaint()
         
+    def mouseReleaseEvent(self, e):
+        #Not holding down anymore, stop rotating
+        self.__rotating = False
+        self.__last_mouse_pos = None
+    
+    def mouseMoveEvent(self, e):
+        if not self.__rotating or self.__last_mouse_pos is None:
+            return
 
+        #Calculate differences
+        dx = e.position().x() - self.__last_mouse_pos.x()
+        dy = e.position().y() - self.__last_mouse_pos.y()
+
+        #Add to rotation slowly
+        self.__rot_y += dx * 0.003
+        self.__rot_x += dy * 0.003
+        
+        #Keep the DT facing upwards
+        limit = pi - 0.1
+        self.__rot_x = max(-limit, min(-0.1, self.__rot_x))
+
+        #Update last mouse position
+        self.__last_mouse_pos = e.position()
+        self.update()
+    
     def paintEvent(self, e):
         #Draw situation
         qp = QPainter(self)
-        
-        #Start draw
-        qp.begin(self)
         
         #Create new pen
         pen = QPen()
@@ -112,7 +169,9 @@ class Draw(QWidget):
             qp.setPen(pen)
 
             #Process all triangles
-            for triangle in self.__triangles:
+            triangles = sorted(self.__triangles, key=self.depth, reverse=True)
+
+            for triangle in triangles:
                 if self.__view_Slope:
                     #Get slope
                     slope = triangle.getSlope()
@@ -136,8 +195,12 @@ class Draw(QWidget):
                 #Assign brush color
                 qp.setBrush(color)
 
-                #Draw polygon
-                pol = QPolygonF([triangle.getP1(), triangle.getP2(), triangle.getP3()])
+                #Draw transformed polygon
+                p1 = self.transform_point(triangle.getP1())
+                p2 = self.transform_point(triangle.getP2())
+                p3 = self.transform_point(triangle.getP3())
+
+                pol = QPolygonF([p1, p2, p3])
                 
                 qp.drawPolygon(pol)
             
@@ -149,7 +212,9 @@ class Draw(QWidget):
             
             #Draw edges
             for e in self.__DT:
-                qp.drawLine(e.getStart(), e.getEnd())
+                p1 = self.transform_point(e.getStart())
+                p2 = self.transform_point(e.getEnd())
+                qp.drawLine(p1, p2)
 
         #Draw contour lines
         if self.__view_Contours:        
@@ -159,15 +224,19 @@ class Draw(QWidget):
             
             #Draw contour lines
             for c in self.__contours:
-                qp.drawLine(c.getStart(), c.getEnd())
+                p1 = self.transform_point(c.getStart())
+                p2 = self.transform_point(c.getEnd())
+                qp.drawLine(p1, p2)
             
         #Set properties, points
         pen.setWidth(15)
         pen.setColor(Qt.GlobalColor.black)
         qp.setPen(pen)
    
-        #Draw points
-        qp.drawPoints(self.__points)
+        #Draw points as circles that change size with zoom
+        for point in self.__points:
+            p = self.transform_point(point)
+            qp.drawEllipse(p, 3, 3)
         
         #End draw
         qp.end()
@@ -207,6 +276,69 @@ class Draw(QWidget):
         self.__cache_dirty = True
         self.update()
     
+    def rotate_point(self, x, y, z, ax, ay):
+        #Rotation around X
+        y2 = y * cos(ax) - z * sin(ax)
+        z2 = y * sin(ax) + z * cos(ax)
+
+        #Rotation around Y
+        x3 = x * cos(ay) + z2 * sin(ay)
+        z3 = -x * sin(ay) + z2 * cos(ay)
+
+        #Return rotated point
+        return x3, y2, z3
+
+    def project_point(self, x, y, z, d=1000):
+        z += 2000
+        factor = d / z
+        return x * factor, y * factor
+
+    def transform_point(self, p):
+        x, y, z = p.x(), p.y(), p.z()
+
+        #Centering
+        cx, cy, cz = self.get_center()
+        x -= cx
+        y -= cy
+        z -= cz
+
+        #Rotation
+        x, y, z = self.rotate_point(x, y, z, self.__rot_x, self.__rot_y)
+
+        #Projection of the point
+        x, y = self.project_point(x, y, z)
+
+        #Adjust with pan and zoom
+        x = x * self.__zoom + self.width() / 2 + self.__pan[0]
+        y = y * self.__zoom + self.height() / 2 + self.__pan[1]
+
+        return QPointF(x, y)
+    
+    def depth(self, tri):
+        #Calculates the triangle depth for drawing
+        z1 = self.rotate_point(tri.getP1().x(), tri.getP1().y(), tri.getP1().z(), self.__rot_x, self.__rot_y)[2]
+        z2 = self.rotate_point(tri.getP2().x(), tri.getP2().y(), tri.getP2().z(), self.__rot_x, self.__rot_y)[2]
+        z3 = self.rotate_point(tri.getP3().x(), tri.getP3().y(), tri.getP3().z(), self.__rot_x, self.__rot_y)[2]
+
+        return (z1 + z2 + z3) / 3
+
+    def get_center(self):
+        if not self.__points:
+            return 0, 0, 0
+
+        #Initialize sums
+        n = len(self.__points)
+        x_sum, y_sum, z_sum = 0, 0, 0
+
+        #Sum the coordinates
+        for point in self.__points:
+            x_sum += point.x()
+            y_sum += point.y()
+            z_sum += point.z()
+
+        #Return averages
+        return x_sum/n, y_sum/n, z_sum/n
+
     def setPointsFromLas(self, las):
         #Sets the points from a las object
         xs = las.x
