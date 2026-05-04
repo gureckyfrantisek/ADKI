@@ -5,6 +5,7 @@ from qpoint3df import *
 from math import *
 from edge import *
 from triangle import *
+from contour import *
 
 class Algorithms:
     
@@ -237,7 +238,7 @@ class Algorithms:
         a = self.getContourPoint(p1, p2, z)
         b = self.getContourPoint(p2, p3, z)
 
-        contour_lines.append(Edge(a, b))
+        contour_lines.append(Contour(a, b, z))
 
     
     def getSlope(self, p1:QPoint3DF, p2:QPoint3DF, p3:QPoint3DF):
@@ -347,3 +348,118 @@ class Algorithms:
             
             #Set aspect
             t.setAspect(aspect)
+
+
+    def connect_contours(self, contours):
+        #Connects countour segments into contour lines
+        used_lines = []
+        contour_lines = []
+
+        for line in contours:
+
+            if line in used_lines:
+                continue
+
+            contour_line = [line]
+            used_lines.append(line)
+
+            sx, sy = line.getStart().x(), line.getStart().y()
+            ex, ey = line.getEnd().x(), line.getEnd().y()
+
+            while True:
+                found_line = False
+                for adj_line in contours:
+                    e_sx, e_sy = adj_line.getEnd().x(), adj_line.getEnd().y()
+                    if sx == e_sx and sy == e_sy and (adj_line not in used_lines):
+                        sx, sy = adj_line.getStart().x(), adj_line.getStart().y()
+                        used_lines.append(adj_line)
+                        contour_line.append(adj_line)
+                        found_line = True
+                if not found_line:
+                    break
+
+            while True:
+                found_line = False
+                for adj_line in contours:
+                    s_sx, s_sy = adj_line.getStart().x(), adj_line.getStart().y()
+                    if ex == s_sx and ey == s_sy and (adj_line not in used_lines):
+                        ex, ey = adj_line.getEnd().x(), adj_line.getEnd().y()
+                        used_lines.append(adj_line)
+                        contour_line.append(adj_line)
+                        found_line = True
+                if not found_line:
+                    break
+
+            contour_lines.append(contour_line)
+
+        return contour_lines
+    
+
+    def connect_contours(self, contours):
+        from collections import defaultdict
+
+        # Group contours by height (z)
+        contours_by_z = defaultdict(list)
+        for line in contours:
+            contours_by_z[line.z()].append(line)
+
+        contour_lines = []
+
+        # Process each height level separately
+        for z, lines in contours_by_z.items():
+            used = set()
+
+            # Build lookup: point -> lines that start there
+            start_map = defaultdict(list)
+            end_map = defaultdict(list)
+
+            for line in lines:
+                s = (line.getStart().x(), line.getStart().y())
+                e = (line.getEnd().x(), line.getEnd().y())
+                start_map[s].append(line)
+                end_map[e].append(line)
+
+            for line in lines:
+                if line in used:
+                    continue
+
+                contour_line = [line]
+                used.add(line)
+
+                sx, sy = line.getStart().x(), line.getStart().y()
+                ex, ey = line.getEnd().x(), line.getEnd().y()
+
+                # go backward
+                while True:
+                    found = False
+                    for adj in end_map[(sx, sy)]:
+                        if adj not in used:
+                            used.add(adj)
+                            contour_line.append(adj)
+                            sx, sy = adj.getStart().x(), adj.getStart().y()
+                            found = True
+                            break
+                    if not found:
+                        break
+
+                # go forward
+                while True:
+                    found = False
+                    for adj in start_map[(ex, ey)]:
+                        if adj not in used:
+                            used.add(adj)
+                            contour_line.append(adj)
+                            ex, ey = adj.getEnd().x(), adj.getEnd().y()
+                            found = True
+                            break
+                    if not found:
+                        break
+
+                contour_lines.append(contour_line)
+
+        return contour_lines
+    
+
+    def createContourAnnotation(self, contour_lines, z_interval):
+        #Create contour annotation
+        pass
