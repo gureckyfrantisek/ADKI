@@ -54,12 +54,20 @@ class Draw(QWidget):
         #Clamp zoom
         new_zoom = max(0.1, min(100, new_zoom))
 
-        #Compute zoom ratio
-        ratio = new_zoom / old_zoom
+        #Point in screen-space relative to center + pan
+        cx = self.width() / 2 + self.__pan[0]
+        cy = self.height() / 2 + self.__pan[1]
+
+        #Vector from center to cursor
+        vx = mx - cx
+        vy = my - cy
+
+        #Scale that vector
+        scale = new_zoom / old_zoom
 
         #Adjust pan so cursor stays fixed
-        self.__pan[0] = mx - ratio * (mx - self.__pan[0])
-        self.__pan[1] = my - ratio * (my - self.__pan[1])
+        self.__pan[0] = self.__pan[0] - vx * (scale - 1)
+        self.__pan[1] = self.__pan[1] - vy * (scale - 1)
 
         #Apply zoom
         self.__zoom = new_zoom
