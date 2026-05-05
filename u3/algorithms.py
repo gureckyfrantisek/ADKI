@@ -332,7 +332,7 @@ class Algorithms:
             nz = -nz
         
         #Azimuth is the arctan of nx and ny
-        azimuth = atan2(nx, ny)
+        azimuth = atan2(nx, ny) + pi/2
 
         #Return in <0, 2pi>
         if azimuth <= 0:
