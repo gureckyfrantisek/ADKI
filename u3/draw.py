@@ -243,43 +243,43 @@ class Draw(QWidget):
                     p2 = self.transform_point(c.getEnd())
                     qp.drawLine(p1, p2)
 
-        # Draw contour annotations
-        pen.setColor(QColor(85, 38, 0))
-        pen.setWidth(1)
-        qp.setPen(pen)
-
-        for start, end, x, y, text, rotation in self.__contour_annotations:
-            qp.save()
-            #Set properties, contour annotations
-            if text % 5 == 0:
-                pen.setColor(QColor(85, 38, 0))
-            else: 
-                pen.setColor(QColor(85, 38, 0).lighter(150))
+            # Draw contour annotations
+            pen.setColor(QColor(85, 38, 0))
+            pen.setWidth(1)
             qp.setPen(pen)
-           # Get two points of the contour segment (you must store them!)
-            p1 = self.transform_point(start)
-            p2 = self.transform_point(end)
 
-            # Compute angle in screen space
-            dx = p2.x() - p1.x()
-            dy = p2.y() - p1.y()
-            angle = atan2(dy, dx)
+            for start, end, x, y, text, rotation in self.__contour_annotations:
+                qp.save()
+                #Set properties, contour annotations
+                if text % 5 == 0:
+                    pen.setColor(QColor(85, 38, 0))
+                else: 
+                    pen.setColor(QColor(85, 38, 0).lighter(150))
+                qp.setPen(pen)
+            # Get two points of the contour segment (you must store them!)
+                p1 = self.transform_point(start)
+                p2 = self.transform_point(end)
 
-            # Ensure text is heading upwards
-            if angle < -pi/2:
-                angle += pi
-            elif angle > pi/2:
-                angle -= pi
+                # Compute angle in screen space
+                dx = p2.x() - p1.x()
+                dy = p2.y() - p1.y()
+                angle = atan2(dy, dx)
 
-            # Position text (you already have x, y)
-            t_x, t_y = self.transform_text(x, y, int(text) - 5)
+                # Ensure text is heading upwards
+                if angle < -pi/2:
+                    angle += pi
+                elif angle > pi/2:
+                    angle -= pi
 
-            qp.translate(t_x, t_y)
-            qp.rotate(degrees(angle))
+                # Position text (you already have x, y)
+                t_x, t_y = self.transform_text(x, y, int(text) - 5)
 
-            qp.drawText(0, 0, str(text))
+                qp.translate(t_x, t_y)
+                qp.rotate(degrees(angle))
 
-            qp.restore()
+                qp.drawText(0, 0, str(text))
+
+                qp.restore()
             
         #Set properties, points
         pen.setWidth(15)
