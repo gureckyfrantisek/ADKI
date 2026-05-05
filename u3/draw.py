@@ -104,27 +104,29 @@ class Draw(QWidget):
         mx = e.position().x()
         my = e.position().y()
 
-        #Undo pan + zoom + screen center
-        x = (mx - self.width()/2 - self.__pan[0]) / self.__zoom
-        y = (my - self.height()/2 - self.__pan[1]) / self.__zoom
-
-        #Approximate inverse projection
-        #Undo projection offset
-        _, _, cz = self.get_center()
-        z = cz
-
-        #Undo rotation (inverse rotation = -angles)
-        x, y, z = self.rotate_point(x, y, z, -self.__rot_x, -self.__rot_y)
-
-        #Undo centering
-        cx, cy, cz = self.get_center()
-        x += cx
-        y += cy
-
-        #Get random z
+        #Pick z first so we can use the correct perspective depth in the inverse
         z_min = 200
         z_max = 600
         z = random() * (z_max - z_min) + z_min
+
+        #Undo pan + zoom + screen center → projected (post-perspective) coords
+        proj_x = (mx - self.width()/2 - self.__pan[0]) / self.__zoom
+        proj_y = (my - self.height()/2 - self.__pan[1]) / self.__zoom
+
+        #Undo perspective: proj = x_rot * d/(z_rot+2000)
+        #z_rot = z_centered (approx, valid for no/small rotation)
+        cx, cy, cz = self.get_center()
+        d = 1000
+        depth = (z - cz) + 2000
+        x = proj_x * depth / d
+        y = proj_y * depth / d
+
+        #Undo rotation (inverse rotation = -angles)
+        x, y, _ = self.rotate_point(x, y, z - cz, -self.__rot_x, -self.__rot_y)
+
+        #Undo centering
+        x += cx
+        y += cy
 
         #Create new point
         p = QPoint3DF(x, y, z)
@@ -166,12 +168,6 @@ class Draw(QWidget):
         
         #Create new pen
         pen = QPen()
-        
-        # Apply zoom/pan transform
-        transform = QTransform()
-        transform.scale(self.__zoom, self.__zoom)
-        transform.translate(self.__pan[0], self.__pan[1])
-        qp.setTransform(transform)
 
         #Draw slope or aspect, not both
         if self.__view_Slope or self.__view_Aspect:
@@ -304,16 +300,23 @@ class Draw(QWidget):
             return
 
         #Find bounding box of all points
+        d = 1000
+        cx, cy, cz = self.get_center()
         x_min = float('inf')
         x_max = float('-inf')
         y_min = float('inf')
         y_max = float('-inf')
 
         for point in self.__points:
-            x_min = min(x_min, point.x())
-            x_max = max(x_max, point.x())
-            y_min = min(y_min, point.y())
-            y_max = max(y_max, point.y())
+            x_c = point.x() - cx
+            y_c = point.y() - cy
+            z_c = point.z() - cz
+            x_r, y_r, z_r = self.rotate_point(x_c, y_c, z_c, self.__rot_x, self.__rot_y)
+            pf = d / (z_r + 2000)
+            x_min = min(x_min, x_r * pf)
+            x_max = max(x_max, x_r * pf)
+            y_min = min(y_min, y_r * pf)
+            y_max = max(y_max, y_r * pf)
 
         data_width = x_max - x_min
         data_height = y_max - y_min
@@ -326,12 +329,12 @@ class Draw(QWidget):
         zoom_x = (self.width() * padding) / data_width
         zoom_y = (self.height() * padding) / data_height
         self.__zoom = min(zoom_x, zoom_y)
-        print("Zoom:", self.__zoom)
 
         #Center the data in the window
-        self.__pan[0] = (self.width() / (2 * self.__zoom)) - (x_min + data_width / 2)
-        self.__pan[1] = (self.height() / (2 * self.__zoom)) - (y_min + data_height / 2)
-        print("Pan:", self.__pan)
+        proj_cx = (x_min + x_max) / 2
+        proj_cy = (y_min + y_max) / 2
+        self.__pan[0] = -proj_cx * self.__zoom
+        self.__pan[1] = -proj_cy * self.__zoom
 
         self.__cache_dirty = True
         self.update()
@@ -420,6 +423,8 @@ class Draw(QWidget):
 
     def setPointsFromLas(self, las):
         #Sets the points from a las object
+        self.__points = []
+
         xs = las.x
         ys = las.y
         zs = las.z
