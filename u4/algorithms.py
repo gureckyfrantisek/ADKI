@@ -135,7 +135,7 @@ class Algorithms():
             area = self.getPolygonArea(QPolygonF(triangle_points))
 
             #Check area and remove point
-            if area < area_min:
+            if abs(area) < area_min:
                 pol_simp.pop(i)
                 
             #Increment index
