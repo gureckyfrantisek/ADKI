@@ -128,6 +128,7 @@ class Ui_MainForm(object):
         #User-defined connections
         self.actionDouglas_Peucker.triggered.connect(self.simplifyDouglasPeuckerClick)
         self.actionEuclidean_distance.triggered.connect(self.simplifyEuclideanDistanceClick)
+        self.actionReumann_Witkam.triggered.connect(self.simplifyReumannWitkamClick)
         self.actionWhyatt.triggered.connect(self.simplifyWhyattClick)
         self.actionLLR.triggered.connect(self.LLRClick)
         self.actionArrea_displacement.triggered.connect(self.AreaDisplacementClick)
@@ -192,7 +193,24 @@ class Ui_MainForm(object):
         a = Algorithms()
         
         #Call euclidean distance
-        polyline_simp = a.simplifyWhyatt(polyline, 30)
+        polyline_simp = a.simplifyWhyatt(polyline, 2000)
+
+        #Set results
+        self.Canvas.setPolylineSimp(polyline_simp)
+        
+        #Repaint
+        self.Canvas.repaint()
+
+
+    def simplifyReumannWitkamClick(self):
+        #Get source polyline
+        polyline = self.Canvas.getPolyline()
+
+        #Create algorithms instance
+        a = Algorithms()
+        
+        #Call euclidean distance
+        polyline_simp = a.simplifyReumannWitkam(polyline)
 
         #Set results
         self.Canvas.setPolylineSimp(polyline_simp)

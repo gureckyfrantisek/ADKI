@@ -145,6 +145,44 @@ class Algorithms():
         #Return simplified polyline
         return pol_simp
     
+
+    def simplifyReumannWitkam(self, pol, h=50, m=5):
+        #Simplyfi polyline using Reumann-Witkam algorithm
+
+        #M offset by 1 because of corridor point exclusion ;)
+        m += 1
+
+        #Number of points in original polyline
+        n = len(pol)
+
+        #Insert 1st point of the simplyfied polyline 
+        pol_simp = [pol[0]]
+
+        i = 1
+        #Process corridors 
+        while i < n-1:
+            #Extract corridor definition points
+            p1 = pol[i]
+            p2 = pol[i+1]
+
+            #Find point outside the corridor
+            for j in range(i+2, min(i+m, n)):
+                #Appends last point in corridor
+                if self.getPointLineDistance(pol[j], p1, p2) > h:
+                    pol_simp.append(pol[j-1])
+                    i = j-1
+                    break
+            #Appends last point if limit 'm' is exceeded
+            else:
+                i = min(i+m, n-1)
+                pol_simp.append(pol[i])
+
+        #Appends end point of the original polyline
+        pol_simp.append(pol[n-1])
+
+        #Returns simplyfied polyline
+        return pol_simp
+
     
     def computeEuclideanDistance(self, p1, p2):
         #Compute euclidean distance
