@@ -1,0 +1,14 @@
+<RCC>
+  <qresource prefix="images">
+    <file>images/icons/area_displ.png</file>
+    <file>images/icons/llr.png</file>
+    <file>images/icons/clear.png</file>
+    <file>images/icons/clear_all.png</file>
+    <file>images/icons/douglas_peucker.png</file>
+    <file>images/icons/eucl_distance.png</file>
+    <file>images/icons/exit.png</file>
+    <file>images/icons/open_file.png</file>
+    <file>images/icons/whyatt.png</file>
+    <file>images/icons/witkamm.png</file>
+  </qresource>
+</RCC>

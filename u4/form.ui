@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainForm</class>
+ <widget class="QMainWindow" name="MainForm">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>964</width>
+    <height>780</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <item>
+     <widget class="Draw" name="Canvas" native="true"/>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>964</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="actionOpen"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
+   </widget>
+   <widget class="QMenu" name="menuSimplify">
+    <property name="title">
+     <string>Simplify</string>
+    </property>
+    <addaction name="actionEuclidean_distance"/>
+    <addaction name="actionReumann_Witkam"/>
+    <addaction name="actionDouglas_Peucker"/>
+    <addaction name="actionWhyatt"/>
+   </widget>
+   <widget class="QMenu" name="menuCompute">
+    <property name="title">
+     <string>Compute</string>
+    </property>
+    <addaction name="actionArrea_displacement"/>
+    <addaction name="actionLLR"/>
+   </widget>
+   <widget class="QMenu" name="menuClear">
+    <property name="title">
+     <string>Clear</string>
+    </property>
+    <addaction name="actionClear_results"/>
+    <addaction name="actionClear_All"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuSimplify"/>
+   <addaction name="menuCompute"/>
+   <addaction name="menuClear"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar">
+   <property name="windowTitle">
+    <string>toolBar</string>
+   </property>
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+   <addaction name="actionOpen"/>
+   <addaction name="separator"/>
+   <addaction name="actionEuclidean_distance"/>
+   <addaction name="actionReumann_Witkam"/>
+   <addaction name="actionDouglas_Peucker"/>
+   <addaction name="actionWhyatt"/>
+   <addaction name="separator"/>
+   <addaction name="actionArrea_displacement"/>
+   <addaction name="actionLLR"/>
+   <addaction name="separator"/>
+   <addaction name="actionClear_results"/>
+   <addaction name="actionClear_All"/>
+   <addaction name="separator"/>
+  </widget>
+  <action name="actionOpen">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/open_file.png</normaloff>:/images/images/icons/open_file.png</iconset>
+   </property>
+   <property name="text">
+    <string>Open</string>
+   </property>
+   <property name="toolTip">
+    <string>Open file</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/exit.png</normaloff>:/images/images/icons/exit.png</iconset>
+   </property>
+   <property name="text">
+    <string>Exit</string>
+   </property>
+   <property name="toolTip">
+    <string>Exit ap;lication</string>
+   </property>
+  </action>
+  <action name="actionEuclidean_distance">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/eucl_distance.png</normaloff>:/images/images/icons/eucl_distance.png</iconset>
+   </property>
+   <property name="text">
+    <string>Euclidean distance</string>
+   </property>
+   <property name="toolTip">
+    <string>Simplify polyline using Euclidean distance</string>
+   </property>
+  </action>
+  <action name="actionReumann_Witkam">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/witkamm.png</normaloff>:/images/images/icons/witkamm.png</iconset>
+   </property>
+   <property name="text">
+    <string>Reumann-Witkam</string>
+   </property>
+   <property name="toolTip">
+    <string>Simplify polyline using Reumann-Witkam</string>
+   </property>
+  </action>
+  <action name="actionDouglas_Peucker">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/douglas_peucker.png</normaloff>:/images/images/icons/douglas_peucker.png</iconset>
+   </property>
+   <property name="text">
+    <string>Douglas-Peucker</string>
+   </property>
+   <property name="toolTip">
+    <string>Simplify polyline using Douglas-Peucker</string>
+   </property>
+  </action>
+  <action name="actionWhyatt">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/whyatt.png</normaloff>:/images/images/icons/whyatt.png</iconset>
+   </property>
+   <property name="text">
+    <string>Whyatt</string>
+   </property>
+   <property name="toolTip">
+    <string>Simplify polyline using Whyatt algorithm</string>
+   </property>
+  </action>
+  <action name="actionArrea_displacement">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/area_displ.png</normaloff>:/images/images/icons/area_displ.png</iconset>
+   </property>
+   <property name="text">
+    <string>Area displacement</string>
+   </property>
+   <property name="toolTip">
+    <string>Compute area displacement</string>
+   </property>
+  </action>
+  <action name="actionLLR">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/llr.png</normaloff>:/images/images/icons/llr.png</iconset>
+   </property>
+   <property name="text">
+    <string>LLR</string>
+   </property>
+   <property name="toolTip">
+    <string>Compute local length ratio</string>
+   </property>
+  </action>
+  <action name="actionClear_results">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/clear.png</normaloff>:/images/images/icons/clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear results</string>
+   </property>
+  </action>
+  <action name="actionClear_All">
+   <property name="icon">
+    <iconset resource="icons.qrc">
+     <normaloff>:/images/images/icons/clear_all.png</normaloff>:/images/images/icons/clear_all.png</iconset>
+   </property>
+   <property name="text">
+    <string>Clear All</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Draw</class>
+   <extends>QWidget</extends>
+   <header>draw.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="icons.qrc"/>
+ </resources>
+ <connections/>
+</ui>
