@@ -81,6 +81,11 @@ class Ui_MainForm(object):
         icon6.addPixmap(QtGui.QPixmap(f"{file_path}/icons/area_displ.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionArrea_displacement.setIcon(icon6)
         self.actionArrea_displacement.setObjectName("actionArrea_displacement")
+        self.actionPosition_displacement = QtGui.QAction(parent=MainForm)
+        icon10 = QtGui.QIcon()
+        icon10.addPixmap(QtGui.QPixmap(f"{file_path}/icons/position_displ.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.actionPosition_displacement.setIcon(icon10)
+        self.actionPosition_displacement.setObjectName("actionPosition_displacement")
         self.actionLLR = QtGui.QAction(parent=MainForm)
         icon7 = QtGui.QIcon()
         icon7.addPixmap(QtGui.QPixmap(f"{file_path}/icons/llr.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -105,6 +110,7 @@ class Ui_MainForm(object):
         self.menuSimplify.addAction(self.actionWhyatt)
         self.menuCompute.addAction(self.actionArrea_displacement)
         self.menuCompute.addAction(self.actionLLR)
+        self.menuCompute.addAction(self.actionPosition_displacement)
         self.menuClear.addAction(self.actionClear_results)
         self.menuClear.addAction(self.actionClear_All)
         self.menubar.addAction(self.menuFile.menuAction())
@@ -120,6 +126,7 @@ class Ui_MainForm(object):
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionArrea_displacement)
         self.toolBar.addAction(self.actionLLR)
+        self.toolBar.addAction(self.actionPosition_displacement)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionClear_results)
         self.toolBar.addAction(self.actionClear_All)
@@ -132,6 +139,7 @@ class Ui_MainForm(object):
         self.actionWhyatt.triggered.connect(self.simplifyWhyattClick)
         self.actionLLR.triggered.connect(self.LLRClick)
         self.actionArrea_displacement.triggered.connect(self.AreaDisplacementClick)
+        self.actionPosition_displacement.triggered.connect(self.PositionalDisplacementClick)
         self.actionClear_All.triggered.connect(self.clearAllClick)
         self.actionClear_results.triggered.connect(self.clearResultClick)
 
@@ -258,6 +266,26 @@ class Ui_MainForm(object):
         qmb.exec()
 
 
+    def PositionalDisplacementClick(self):
+        #Get source polyline and polyline simp
+        polyline = self.Canvas.getPolyline()
+        polyline_simp = self.Canvas.getPolylineSimp()
+
+        #Create algorithms instance
+        a = Algorithms()
+        
+        #Call positional displacement
+        ad_result = a.computePositionalDisplacement(polyline_simp, polyline)
+
+        #Create messagebox
+        qmb = QMessageBox()
+        qmb.setWindowTitle("Area displacement criterion")
+        qmb.setText(str(ad_result))
+        
+        #Show positional displacement
+        qmb.exec()
+
+
     def retranslateUi(self, MainForm):
         _translate = QtCore.QCoreApplication.translate
         MainForm.setWindowTitle(_translate("MainForm", "MainWindow"))
@@ -280,6 +308,8 @@ class Ui_MainForm(object):
         self.actionWhyatt.setToolTip(_translate("MainForm", "Simplify polyline using Whyatt algorithm"))
         self.actionArrea_displacement.setText(_translate("MainForm", "Area displacement"))
         self.actionArrea_displacement.setToolTip(_translate("MainForm", "Compute area displacement"))
+        self.actionPosition_displacement.setText(_translate("MainForm", "Positional displacement"))
+        self.actionPosition_displacement.setToolTip(_translate("MainForm", "Compute positional displacement"))
         self.actionLLR.setText(_translate("MainForm", "LLR"))
         self.actionLLR.setToolTip(_translate("MainForm", "Compute local length ratio"))
         self.actionClear_results.setText(_translate("MainForm", "Clear results"))

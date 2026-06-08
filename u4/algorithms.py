@@ -18,12 +18,12 @@ class Algorithms():
         return area/2
 
 
-    def getPointLineDistance(self, p: QPointF, p1: QPointF, p2: QPointF):
+    def getPointLineDistance(self, p: QPointF, p1: QPointF, p2: QPointF, absolute = True):
         #Distance of the point from the line
         numerator = p.x()*(p1.y()-p2.y()) + p1.x()*(p2.y()-p.y()) + p2.x()*(p.y()-p1.y())
         denominator = sqrt((p2.x()-p1.x())**2 + (p2.y()-p1.y())**2)
 
-        return abs(numerator/denominator)
+        return abs(numerator/denominator) if absolute else numerator/denominator
 
 
     def dp(self, pol, pol_simp, h, s, e):
@@ -247,4 +247,25 @@ class Algorithms():
             displacement += area
         
         return displacement
+    
 
+    def computePositionalDisplacement(self, pol_simp, pol):
+        #Compute positional displecement of simplified polyline
+
+        n = len(pol_simp)
+        displacement = 0
+
+        #Process all segments
+        for i in range(n-1):
+            p1 = pol_simp[i]
+            p2 = pol_simp[i+1]
+            #Get start point index
+            start = self.findPointIndex(p1, pol, i)
+            
+            #Get end point index
+            end = self.findPointIndex(p2, pol, min(start+1, len(pol)-1))
+
+            for j in range(start, end):
+                displacement += self.getPointLineDistance(pol[j], p1, p2, absolute=False)
+
+        return displacement
