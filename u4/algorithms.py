@@ -237,7 +237,7 @@ class Algorithms():
             start = self.findPointIndex(pol_simp[i], pol, i)
             
             #Get end point index
-            end = self.findPointIndex(pol_simp[i+1], pol, start+1)
+            end = self.findPointIndex(pol_simp[i+1], pol, min(start+1, len(pol)-1))
             
             #Create polygon
             seg = QPolygonF(pol[start:end+1])
