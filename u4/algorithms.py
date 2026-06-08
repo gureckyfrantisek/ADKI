@@ -211,7 +211,7 @@ class Algorithms():
             llr += (d1 + d2) / d3
         
         #Return mean LLR value
-        return llr / (n-2)
+        return llr / (n-2) if n>2 else 0 #Handles zero division error
     
     
     def findPointIndex(self, p, pol, start):
