@@ -184,6 +184,49 @@ class Algorithms():
         return pol_simp
 
     
+    def simplifyLang(self, pol, h=50, m=5):
+        #Simplify polyline using Lang algorithm
+
+        #M offset by 1 because of corridor point exclusion ;)
+        m += 1
+
+        #Number of points in original polyline
+        n = len(pol)
+
+        #Insert 1st point of the simplified polyline
+        pol_simp = [pol[0]]
+
+        i = 0
+        #Process corridors
+        while i < n - 1:
+            #Take the first point
+            p1 = pol[i]
+
+            #For each last point, starting from the furthest
+            for j in range(min(i + m, n - 1), i, -1):
+                p2 = pol[j]
+
+                # Check if all points between i and j lie inside the corridor
+                all_inside = True
+                for k in range(i + 1, j):
+                    if self.getPointLineDistance(pol[k], p1, p2) > h:
+                        all_inside = False
+                        break
+
+                # All points are inside the corridor
+                if all_inside:
+                    pol_simp.append(p2)
+                    i = j
+                    break
+
+        #Ensure last point is always included
+        if pol_simp[-1] != pol[-1]:
+            pol_simp.append(pol[-1])
+
+        #Returns simplyfied polyline
+        return pol_simp
+
+    
     def computeEuclideanDistance(self, p1, p2):
         #Compute euclidean distance
         dx = p1.x() - p2.x()

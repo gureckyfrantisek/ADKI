@@ -233,6 +233,23 @@ class Ui_MainForm(object):
         
         #Repaint
         self.Canvas.repaint()
+    
+    
+    def simplifyLangClick(self):
+        #Get source polyline
+        polyline = self.Canvas.getPolyline()
+
+        #Create algorithms instance
+        a = Algorithms()
+        
+        #Call euclidean distance
+        polyline_simp = a.simplifyLang(polyline)
+
+        #Set results
+        self.Canvas.setPolylineSimp(polyline_simp)
+        
+        #Repaint
+        self.Canvas.repaint()
 
 
     def LLRClick(self):
