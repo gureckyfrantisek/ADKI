@@ -304,7 +304,7 @@ class Ui_MainForm(object):
 
         #Create messagebox
         qmb = QMessageBox()
-        qmb.setWindowTitle("Area displacement criterion")
+        qmb.setWindowTitle("Positional displacement criterion")
         qmb.setText(str(ad_result))
         
         #Show positional displacement
