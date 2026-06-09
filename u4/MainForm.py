@@ -76,6 +76,11 @@ class Ui_MainForm(object):
         icon5.addPixmap(QtGui.QPixmap(f"{file_path}/icons/whyatt.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionWhyatt.setIcon(icon5)
         self.actionWhyatt.setObjectName("actionWhyatt")
+        self.actionLang = QtGui.QAction(parent=MainForm)
+        icon_lang = QtGui.QIcon()
+        icon_lang.addPixmap(QtGui.QPixmap(f"{file_path}/icons/lang.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.actionLang.setIcon(icon_lang)
+        self.actionLang.setObjectName("actionLang")
         self.actionArrea_displacement = QtGui.QAction(parent=MainForm)
         icon6 = QtGui.QIcon()
         icon6.addPixmap(QtGui.QPixmap(f"{file_path}/icons/area_displ.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -108,6 +113,7 @@ class Ui_MainForm(object):
         self.menuSimplify.addAction(self.actionReumann_Witkam)
         self.menuSimplify.addAction(self.actionDouglas_Peucker)
         self.menuSimplify.addAction(self.actionWhyatt)
+        self.menuSimplify.addAction(self.actionLang)
         self.menuCompute.addAction(self.actionArrea_displacement)
         self.menuCompute.addAction(self.actionLLR)
         self.menuCompute.addAction(self.actionPosition_displacement)
@@ -123,6 +129,7 @@ class Ui_MainForm(object):
         self.toolBar.addAction(self.actionReumann_Witkam)
         self.toolBar.addAction(self.actionDouglas_Peucker)
         self.toolBar.addAction(self.actionWhyatt)
+        self.toolBar.addAction(self.actionLang)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionArrea_displacement)
         self.toolBar.addAction(self.actionLLR)
@@ -137,6 +144,7 @@ class Ui_MainForm(object):
         self.actionEuclidean_distance.triggered.connect(self.simplifyEuclideanDistanceClick)
         self.actionReumann_Witkam.triggered.connect(self.simplifyReumannWitkamClick)
         self.actionWhyatt.triggered.connect(self.simplifyWhyattClick)
+        self.actionLang.triggered.connect(self.simplifyLangClick)
         self.actionLLR.triggered.connect(self.LLRClick)
         self.actionArrea_displacement.triggered.connect(self.AreaDisplacementClick)
         self.actionPosition_displacement.triggered.connect(self.PositionalDisplacementClick)
@@ -225,6 +233,23 @@ class Ui_MainForm(object):
         
         #Repaint
         self.Canvas.repaint()
+    
+    
+    def simplifyLangClick(self):
+        #Get source polyline
+        polyline = self.Canvas.getPolyline()
+
+        #Create algorithms instance
+        a = Algorithms()
+        
+        #Call euclidean distance
+        polyline_simp = a.simplifyLang(polyline)
+
+        #Set results
+        self.Canvas.setPolylineSimp(polyline_simp)
+        
+        #Repaint
+        self.Canvas.repaint()
 
 
     def LLRClick(self):
@@ -279,7 +304,7 @@ class Ui_MainForm(object):
 
         #Create messagebox
         qmb = QMessageBox()
-        qmb.setWindowTitle("Area displacement criterion")
+        qmb.setWindowTitle("Positional displacement criterion")
         qmb.setText(str(ad_result))
         
         #Show positional displacement
@@ -306,6 +331,8 @@ class Ui_MainForm(object):
         self.actionDouglas_Peucker.setToolTip(_translate("MainForm", "Simplify polyline using Douglas-Peucker"))
         self.actionWhyatt.setText(_translate("MainForm", "Whyatt"))
         self.actionWhyatt.setToolTip(_translate("MainForm", "Simplify polyline using Whyatt algorithm"))
+        self.actionLang.setText(_translate("MainForm", "Lang"))
+        self.actionLang.setToolTip(_translate("MainForm", "Simplify polyline using Lang Algorithm"))
         self.actionArrea_displacement.setText(_translate("MainForm", "Area displacement"))
         self.actionArrea_displacement.setToolTip(_translate("MainForm", "Compute area displacement"))
         self.actionPosition_displacement.setText(_translate("MainForm", "Positional displacement"))
