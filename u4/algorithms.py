@@ -23,6 +23,8 @@ class Algorithms():
         numerator = p.x()*(p1.y()-p2.y()) + p1.x()*(p2.y()-p.y()) + p2.x()*(p.y()-p1.y())
         denominator = sqrt((p2.x()-p1.x())**2 + (p2.y()-p1.y())**2)
 
+        if denominator == 0:
+            return 0
         return abs(numerator/denominator) if absolute else numerator/denominator
 
 
@@ -251,6 +253,8 @@ class Algorithms():
             d3 = self.computeEuclideanDistance(pol_simp[i-1], pol_simp[i+1])
 
             #Compute LLR
+            if d3 == 0:
+                continue
             llr += (d1 + d2) / d3
         
         #Return mean LLR value

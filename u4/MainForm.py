@@ -147,6 +147,7 @@ class Ui_MainForm(object):
         self.toolBar.addSeparator()
         
         #User-defined connections
+        self.actionOpen.triggered.connect(lambda: self.Canvas.handleFileOpen())
         self.actionDouglas_Peucker.triggered.connect(self.simplifyDouglasPeuckerClick)
         self.actionEuclidean_distance.triggered.connect(self.simplifyEuclideanDistanceClick)
         self.actionReumann_Witkam.triggered.connect(self.simplifyReumannWitkamClick)
@@ -176,99 +177,100 @@ class Ui_MainForm(object):
 
     def simplifyDouglasPeuckerClick(self):
         
-        #Get source polyline
-        polyline = self.Canvas.getPolyline()
+        #Get source polylines
+        polylines = self.Canvas.getPolylines()
 
         #Create algorithms instance
         a = Algorithms()
         
         #Call D-P
-        polyline_simp = a.simplifyDouglasPeucker(polyline, 30)
+        polylines_simp = [a.simplifyDouglasPeucker(pl, 30) for pl in polylines]
 
         #Set results
-        self.Canvas.setPolylineSimp(polyline_simp)
+        self.Canvas.setPolylinesSimp(polylines_simp)
         
         #Repaint
         self.Canvas.repaint()
         
         
     def simplifyEuclideanDistanceClick(self):
-        #Get source polyline
-        polyline = self.Canvas.getPolyline()
+        #Get source polylines
+        polylines = self.Canvas.getPolylines()
 
         #Create algorithms instance
         a = Algorithms()
         
         #Call euclidean distance
-        polyline_simp = a.simplifyEuclideanDistance(polyline, 100)
+        polylines_simp = [a.simplifyEuclideanDistance(pl, 100) for pl in polylines]
 
         #Set results
-        self.Canvas.setPolylineSimp(polyline_simp)
-        
+        self.Canvas.setPolylinesSimp(polylines_simp)
+
         #Repaint
         self.Canvas.repaint()
 
 
     def simplifyWhyattClick(self):
-        #Get source polyline
-        polyline = self.Canvas.getPolyline()
+        #Get source polylines
+        polylines = self.Canvas.getPolylines()
 
         #Create algorithms instance
         a = Algorithms()
         
-        #Call euclidean distance
-        polyline_simp = a.simplifyWhyatt(polyline, 2000)
+        #Call Whyatt
+        polylines_simp = [a.simplifyWhyatt(pl, 2000) for pl in polylines]
 
         #Set results
-        self.Canvas.setPolylineSimp(polyline_simp)
-        
+        self.Canvas.setPolylinesSimp(polylines_simp)
+
         #Repaint
         self.Canvas.repaint()
 
 
     def simplifyReumannWitkamClick(self):
-        #Get source polyline
-        polyline = self.Canvas.getPolyline()
+        #Get source polylines
+        polylines = self.Canvas.getPolylines()
 
         #Create algorithms instance
         a = Algorithms()
-        
-        #Call euclidean distance
-        polyline_simp = a.simplifyReumannWitkam(polyline)
+
+        #Call Reumann-Witkam
+        polylines_simp = [a.simplifyReumannWitkam(pl) for pl in polylines]
 
         #Set results
-        self.Canvas.setPolylineSimp(polyline_simp)
-        
+        self.Canvas.setPolylinesSimp(polylines_simp)
+
         #Repaint
         self.Canvas.repaint()
     
     
     def simplifyLangClick(self):
-        #Get source polyline
-        polyline = self.Canvas.getPolyline()
+        #Get source polylines
+        polylines = self.Canvas.getPolylines()
 
         #Create algorithms instance
         a = Algorithms()
-        
-        #Call euclidean distance
-        polyline_simp = a.simplifyLang(polyline)
+
+        #Call Lang
+        polylines_simp = [a.simplifyLang(pl) for pl in polylines]
 
         #Set results
-        self.Canvas.setPolylineSimp(polyline_simp)
-        
+        self.Canvas.setPolylinesSimp(polylines_simp)
+
         #Repaint
         self.Canvas.repaint()
 
 
     def LLRClick(self):
-        #Get source polyline simp
-        polyline_simp = self.Canvas.getPolylineSimp()
+        #Get simplified polylines
+        polylines_simp = self.Canvas.getPolylinesSimp()
 
         #Create algorithms instance
         a = Algorithms()
         
-        #Compute LLR
-        llr_result = a.computeLLR(polyline_simp)
+        #Compute LLR (mean over all polylines)
+        results = [a.computeLLR(pl) for pl in polylines_simp]
+        llr_result = sum(results) / len(results) if results else 0
 
         #Create messagebox
         qmb = QMessageBox()
@@ -280,15 +282,16 @@ class Ui_MainForm(object):
 
 
     def AreaDisplacementClick(self):
-        #Get source polyline and polyline simp
-        polyline = self.Canvas.getPolyline()
-        polyline_simp = self.Canvas.getPolylineSimp()
+        #Get source polylines and polylines simp
+        polylines = self.Canvas.getPolylines()
+        polylines_simp = self.Canvas.getPolylinesSimp()
 
         #Create algorithms instance
         a = Algorithms()
-        
-        #Call Area displacement
-        ad_result = a.computeAreaDisplacement(polyline_simp, polyline)
+
+        #Call Area displacement (mean over all polylines)
+        results = [a.computeAreaDisplacement(pl_s, pl) for pl, pl_s in zip(polylines, polylines_simp)]
+        ad_result = sum(results) / len(results) if results else 0
 
         #Create messagebox
         qmb = QMessageBox()
@@ -300,15 +303,16 @@ class Ui_MainForm(object):
 
 
     def PositionalDisplacementClick(self):
-        #Get source polyline and polyline simp
-        polyline = self.Canvas.getPolyline()
-        polyline_simp = self.Canvas.getPolylineSimp()
+        #Get source polylines and polylines simp
+        polylines = self.Canvas.getPolylines()
+        polylines_simp = self.Canvas.getPolylinesSimp()
 
         #Create algorithms instance
         a = Algorithms()
-        
-        #Call positional displacement
-        ad_result = a.computePositionalDisplacement(polyline_simp, polyline)
+
+        #Call positional displacement (mean over all polylines)
+        results = [a.computePositionalDisplacement(pl_s, pl) for pl, pl_s in zip(polylines, polylines_simp)]
+        ad_result = sum(results) / len(results) if results else 0
 
         #Create messagebox
         qmb = QMessageBox()
@@ -320,11 +324,11 @@ class Ui_MainForm(object):
         
             
     def simplifyBendClick(self):
-        polyline = self.Canvas.getPolyline()
+        polylines = self.Canvas.getPolylines()
         a = Algorithms()
         # compactness_min: 0.0 = žádné zjednodušení, 1.0 = odstraní vše
-        polyline_simp = a.simplifyBendSimplify(polyline)
-        self.Canvas.setPolylineSimp(polyline_simp)
+        polylines_simp = [a.simplifyBendSimplify(pl) for pl in polylines]
+        self.Canvas.setPolylinesSimp(polylines_simp)
         self.Canvas.repaint()
 
 
