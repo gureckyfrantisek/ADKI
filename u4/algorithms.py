@@ -312,3 +312,73 @@ class Algorithms():
                 displacement += self.getPointLineDistance(pol[j], p1, p2, absolute=False)
 
         return displacement
+
+
+
+    def InflectionPoint(self, pol):
+        #Find inflection points of the polyline
+        inflections = [0]
+        n = len(pol)
+        prev_cross = 0
+
+        for i in range(1, n-1):
+            
+            ax = pol[i].x() - pol[i-1].x()
+            ay = pol[i].y() - pol[i-1].y()
+            bx = pol[i+1].x() - pol[i].x()
+            by = pol[i+1].y() - pol[i].y()
+            
+            cross = ax * by - ay * bx
+
+            # Sign change = inflection point (skip if prev_cross not yet set)
+            if prev_cross != 0 and cross * prev_cross < 0:
+                inflections.append(i)
+                
+            if cross != 0:
+                prev_cross = cross
+                
+        inflections.append(n-1)
+        return inflections
+    
+    def BendCompactness(self,pol,i_start, i_end):
+        #Compute bend compactness of the segment
+        baseline = self.computeEuclideanDistance(pol[i_start], pol[i_end])
+        arc_len = 0
+        for i in range(i_start, i_end):
+            arc_len += self.computeEuclideanDistance(pol[i], pol[i+1])
+        
+        if arc_len == 0:
+            return 1.0  
+    
+        return baseline / arc_len
+    
+    
+    def simplifyBendSimplify(self, pol):
+        #Simplify polyline using Bend Simplify algorithm
+        #Compact bends (k >= threshold) are kept in full,
+        #non-compact bends are replaced by a straight line to their end point.
+
+        compactness_threshold = 0.5
+        
+        if len(pol) <= 2:
+            return pol
+        
+        inflections = self.InflectionPoint(pol)
+        
+        pol_simp = [pol[inflections[0]]]
+        
+        for i in range(len(inflections) - 1):
+            start = inflections[i]
+            end   = inflections[i + 1]
+            
+            k = self.BendCompactness(pol, start, end)
+            
+            if k >= compactness_threshold:
+                # Compact bend: keep all interior points + the end point
+                for j in range(start + 1, end + 1):
+                    pol_simp.append(pol[j])
+            else:
+                # Non-compact bend: skip interior, jump straight to end point
+                pol_simp.append(pol[end])
+
+        return pol_simp

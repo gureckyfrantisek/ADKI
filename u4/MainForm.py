@@ -81,6 +81,11 @@ class Ui_MainForm(object):
         icon_lang.addPixmap(QtGui.QPixmap(f"{file_path}/icons/lang.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
         self.actionLang.setIcon(icon_lang)
         self.actionLang.setObjectName("actionLang")
+        self.actionBend_Simplify = QtGui.QAction(parent=MainForm)
+        icon_bend = QtGui.QIcon()
+        icon_bend.addPixmap(QtGui.QPixmap(f"{file_path}/icons/bend_simplify.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
+        self.actionBend_Simplify.setIcon(icon_bend)
+        self.actionBend_Simplify.setObjectName("actionBend_Simplify")
         self.actionArrea_displacement = QtGui.QAction(parent=MainForm)
         icon6 = QtGui.QIcon()
         icon6.addPixmap(QtGui.QPixmap(f"{file_path}/icons/area_displ.png"), QtGui.QIcon.Mode.Normal, QtGui.QIcon.State.Off)
@@ -114,6 +119,7 @@ class Ui_MainForm(object):
         self.menuSimplify.addAction(self.actionDouglas_Peucker)
         self.menuSimplify.addAction(self.actionWhyatt)
         self.menuSimplify.addAction(self.actionLang)
+        self.menuSimplify.addAction(self.actionBend_Simplify)
         self.menuCompute.addAction(self.actionArrea_displacement)
         self.menuCompute.addAction(self.actionLLR)
         self.menuCompute.addAction(self.actionPosition_displacement)
@@ -130,6 +136,7 @@ class Ui_MainForm(object):
         self.toolBar.addAction(self.actionDouglas_Peucker)
         self.toolBar.addAction(self.actionWhyatt)
         self.toolBar.addAction(self.actionLang)
+        self.toolBar.addAction(self.actionBend_Simplify)
         self.toolBar.addSeparator()
         self.toolBar.addAction(self.actionArrea_displacement)
         self.toolBar.addAction(self.actionLLR)
@@ -145,6 +152,7 @@ class Ui_MainForm(object):
         self.actionReumann_Witkam.triggered.connect(self.simplifyReumannWitkamClick)
         self.actionWhyatt.triggered.connect(self.simplifyWhyattClick)
         self.actionLang.triggered.connect(self.simplifyLangClick)
+        self.actionBend_Simplify.triggered.connect(self.simplifyBendClick)
         self.actionLLR.triggered.connect(self.LLRClick)
         self.actionArrea_displacement.triggered.connect(self.AreaDisplacementClick)
         self.actionPosition_displacement.triggered.connect(self.PositionalDisplacementClick)
@@ -309,6 +317,15 @@ class Ui_MainForm(object):
         
         #Show positional displacement
         qmb.exec()
+        
+            
+    def simplifyBendClick(self):
+        polyline = self.Canvas.getPolyline()
+        a = Algorithms()
+        # compactness_min: 0.0 = žádné zjednodušení, 1.0 = odstraní vše
+        polyline_simp = a.simplifyBendSimplify(polyline)
+        self.Canvas.setPolylineSimp(polyline_simp)
+        self.Canvas.repaint()
 
 
     def retranslateUi(self, MainForm):
@@ -333,6 +350,8 @@ class Ui_MainForm(object):
         self.actionWhyatt.setToolTip(_translate("MainForm", "Simplify polyline using Whyatt algorithm"))
         self.actionLang.setText(_translate("MainForm", "Lang"))
         self.actionLang.setToolTip(_translate("MainForm", "Simplify polyline using Lang Algorithm"))
+        self.actionBend_Simplify.setText(_translate("MainForm", "Bend Simplify"))
+        self.actionBend_Simplify.setToolTip(_translate("MainForm", "Simplify polyline using Bend Simplify algorithm"))
         self.actionArrea_displacement.setText(_translate("MainForm", "Area displacement"))
         self.actionArrea_displacement.setToolTip(_translate("MainForm", "Compute area displacement"))
         self.actionPosition_displacement.setText(_translate("MainForm", "Positional displacement"))
