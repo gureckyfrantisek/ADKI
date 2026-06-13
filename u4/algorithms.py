@@ -344,17 +344,27 @@ class Algorithms():
         inflections.append(n-1)
         return inflections
     
-    def BendCompactness(self,pol,i_start, i_end):
+       
+    def BendCompactness(self, pol, i_start, i_end):
         #Compute bend compactness of the segment
         baseline = self.computeEuclideanDistance(pol[i_start], pol[i_end])
+        
         arc_len = 0
         for i in range(i_start, i_end):
             arc_len += self.computeEuclideanDistance(pol[i], pol[i+1])
-        
-        if arc_len == 0:
+
+        L = baseline + arc_len
+
+        if L == 0:
             return 1.0  
     
-        return baseline / arc_len
+        polygon_points = [pol[i] for i in range(i_start, i_end + 1)]
+
+        A = abs(self.getPolygonArea(QPolygonF(polygon_points)))
+
+        cmp = 4 * pi * A / (L**2)
+        
+        return cmp
     
     
     def simplifyBendSimplify(self, pol):
