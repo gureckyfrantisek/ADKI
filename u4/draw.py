@@ -8,7 +8,7 @@ class Draw(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__polylines = [[]]
-        #self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) #Enables key inputs
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus) #Enables key inputs
         self.__polylines_simp = []
         #self.__polyline = self.createTestPoints()
         self.__zoom = 1

@@ -372,7 +372,7 @@ class Algorithms():
         #Compact bends (k >= threshold) are kept in full,
         #non-compact bends are replaced by a straight line to their end point.
 
-        compactness_threshold = 0.5
+        th = 0.5
         
         if len(pol) <= 2:
             return pol
@@ -387,7 +387,7 @@ class Algorithms():
             
             k = self.BendCompactness(pol, start, end)
             
-            if k >= compactness_threshold:
+            if k >= th:
                 # Compact bend: keep all interior points + the end point
                 for j in range(start + 1, end + 1):
                     pol_simp.append(pol[j])

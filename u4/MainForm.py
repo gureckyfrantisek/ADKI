@@ -184,7 +184,7 @@ class Ui_MainForm(object):
         a = Algorithms()
         
         #Call D-P
-        polylines_simp = [a.simplifyDouglasPeucker(pl, 30) for pl in polylines]
+        polylines_simp = [a.simplifyDouglasPeucker(pl, 3) for pl in polylines]
 
         #Set results
         self.Canvas.setPolylinesSimp(polylines_simp)
@@ -201,7 +201,7 @@ class Ui_MainForm(object):
         a = Algorithms()
         
         #Call euclidean distance
-        polylines_simp = [a.simplifyEuclideanDistance(pl, 100) for pl in polylines]
+        polylines_simp = [a.simplifyEuclideanDistance(pl, 10) for pl in polylines]
 
         #Set results
         self.Canvas.setPolylinesSimp(polylines_simp)
@@ -218,7 +218,7 @@ class Ui_MainForm(object):
         a = Algorithms()
         
         #Call Whyatt
-        polylines_simp = [a.simplifyWhyatt(pl, 2000) for pl in polylines]
+        polylines_simp = [a.simplifyWhyatt(pl, 40) for pl in polylines]
 
         #Set results
         self.Canvas.setPolylinesSimp(polylines_simp)
@@ -270,6 +270,7 @@ class Ui_MainForm(object):
         
         #Compute LLR (mean over all polylines)
         results = [a.computeLLR(pl) for pl in polylines_simp]
+        results = [results[x] for x in range(len(results)) if results[x] != 0]
         llr_result = sum(results) / len(results) if results else 0
 
         #Create messagebox
